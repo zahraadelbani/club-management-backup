@@ -1,0 +1,365 @@
+{% extends "account/base_entrance.html" %}
+{% load i18n %}
+{% load static tailwind_tags %}
+{% load allauth account static %}
+{% load socialaccount %}
+
+{% block extra_head %}
+{% tailwind_css %} 
+    <style>
+       body {
+            background: url('{% static "background.png" %}') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .alert-message {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .unified-container {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+            border-radius: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1px 1fr;
+        }
+        .divider {
+            background: lightgray;
+            width: 1px;
+            margin: 2rem 0;
+        }
+        .input-field {
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .signin-btn {
+            background: linear-gradient(135deg, #6b96f2 0%, #002147 100%);
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3), 0 2px 4px -1px rgba(99, 102, 241, 0.1);
+        }
+        .signin-btn:hover {
+            background: linear-gradient(135deg, #5c8df5 0%, #002147 100%);
+            transform: translateY(-1px);
+        }
+        .webauthn-btn {
+            background: linear-gradient(135deg, #6b46c1 0%, #4c1d95 100%);
+            box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.3), 0 2px 4px -1px rgba(124, 58, 237, 0.1);
+        }
+        .webauthn-btn:hover {
+            background: linear-gradient(135deg, #5b3aa1 0%, #3c1685 100%);
+            transform: translateY(-1px);
+        }
+        .google-btn {
+            transition: all 0.3s ease;
+        }
+        .google-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .announcement-item {
+            transition: all 0.3s ease;
+        }
+        .announcement-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        @media (max-width: 1024px) {
+            .unified-container {
+                grid-template-columns: 1fr;
+            }
+            .divider {
+                display: none;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block head_title %}
+    {% trans "Sign In" %}
+{% endblock head_title %}
+
+{% block content %}
+    <div class="flex justify-center items-center min-h-screen p-4">
+        <div class="unified-container w-full max-w-6xl">
+            <!-- Login Form Section -->
+            <div class="p-8">
+                <!-- Logo/Title -->
+                <div class="text-center mb-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+                    </svg>
+                    <h1 class="text-3xl font-bold text-gray-800 mt-4">Sign In</h1>
+                    <p class="text-gray-500 mt-2">
+                        {% blocktranslate %}New here? <a href="{{ signup_url }}" class="text-blue-600 font-medium hover:underline">Create an account</a>{% endblocktranslate %}
+                    </p>
+                </div>
+
+                <!-- Non-field Errors -->
+                {% if form.non_field_errors %}
+                <div id="form-error" class="alert-message transform translate-x-full opacity-0 mb-6 p-4 rounded-lg text-white bg-gradient-to-r from-red-400 to-red-500 shadow-md">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Login Form -->
+                <form method="post" action="{% url 'account_login' %}" class="space-y-6">
+                    {% csrf_token %}
+
+                    <!-- Email Field -->
+                    <div>
+                        <label for="id_login" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                                </svg>
+                            </div>
+                            <input id="id_login" name="login" type="email" placeholder="you@example.com" 
+                                class="input-field pl-10 w-full px-4 py-3 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100">
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div>
+                        <label for="id_password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                            </div>
+                            <input id="id_password" name="password" type="password" placeholder="••••••••" 
+                                class="input-field pl-10 w-full px-4 py-3 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100">
+                        </div>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input type="checkbox" name="remember" id="id_remember" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="id_remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
+                        </div>
+                        <a href="{% url 'account_reset_password' %}" class="text-sm text-blue-600 hover:underline">Forgot password?</a>
+                    </div>
+
+                    <!-- Sign In Button -->
+                    <button type="submit" class="signin-btn w-full py-3 px-4 border border-transparent rounded-xl text-sm font-medium text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        {% trans "Sign In" %}
+                    </button>
+
+                    <!-- WebAuthn Button -->
+                    <button type="button" id="webauthn-auth-button" class="webauthn-btn w-full py-3 px-4 border border-transparent rounded-xl text-sm font-medium text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                        Sign in with Security Key or Biometrics
+                    </button>
+
+                    <!-- Google sign-in error -->
+                    {% if request.GET.error == "social_no_signup" %}
+                        <div class="mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
+                            Google sign-in is only allowed for existing accounts. Please sign up manually.
+                        </div>
+                    {% endif %}
+
+                    <!-- Social Login Divider -->
+                    {% if SOCIALACCOUNT_ENABLED %}
+                    <div class="relative mt-6">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">Or continue with</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Google Sign-In Button -->
+                    {% if SOCIALACCOUNT_ENABLED %}
+                    <a href="{% provider_login_url 'google' process='login' %}"  class="google-btn flex items-center justify-center w-full py-3 px-4 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-300">
+                        <img class="h-5 w-5 mr-2" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google logo">
+                        Sign in with Google
+                    </a>
+                    {% endif %}
+                </form>
+
+                <!-- Footer -->
+                <div class="mt-8 text-center text-sm text-gray-500">
+                    <p>All students have to register using their student email and password.</p>
+                </div>
+            </div>
+
+            <!-- Vertical Divider -->
+            <div class="divider"></div>
+
+            <!-- Announcements Section -->
+            <div class="p-8">
+                <div class="text-center mb-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                    </svg>
+                </div>
+
+                <div class="space-y-4">
+                    {% for announcement in general_announcements %}
+                      <div class="announcement-item bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-start">
+                          <div class="flex-shrink-0">
+                            <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100">
+                              <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                            </span>
+                          </div>
+                          <div class="ml-4">
+                            <h3 class="text-sm font-medium text-gray-900">{{ announcement.title }}</h3>
+                            <p class="mt-1 text-sm text-gray-500">{{ announcement.content }}</p>
+                            <p class="mt-1 text-xs text-gray-400">{{ announcement.created_at|timesince }} ago</p>
+                          </div>
+                        </div>
+                      </div>
+                    {% empty %}
+                      <p class="text-sm text-gray-500 text-center">No announcements yet.</p>
+                    {% endfor %}
+                  </div>
+                  
+            </div>
+        </div>
+    </div>
+
+    
+{% endblock content %}
+
+{% block extra_body %}
+    {{ block.super }}
+    <script>
+      //=== Helpers ===//
+      // base64url → ArrayBuffer
+      function b64urlToBuffer(b64url) {
+        const padding = '='.repeat((4 - (b64url.length % 4)) % 4);
+        const base64 = (b64url + padding)
+          .replace(/-/g, '+')
+          .replace(/_/g, '/');
+        const raw = atob(base64);
+        const buf = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; ++i) {
+          buf[i] = raw.charCodeAt(i);
+        }
+        return buf.buffer;
+      }
+  
+      // ArrayBuffer → base64url
+      function bufferToB64url(buffer) {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let b of bytes) {
+          binary += String.fromCharCode(b);
+        }
+        return btoa(binary)
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=+$/,'');
+      }
+  
+      document.addEventListener('DOMContentLoaded', () => {
+        const authBtn = document.getElementById('webauthn-auth-button');
+        if (!authBtn) return;
+  
+        // Hide biometric button and show message if WebAuthn is not supported
+        if (
+          !window.PublicKeyCredential ||
+          typeof window.PublicKeyCredential !== "function"
+        ) {
+          authBtn.style.display = "none";
+          // Show fallback notice
+          const fallbackNotice = document.createElement('div');
+          fallbackNotice.innerText = "Biometric sign-in (Face ID/Fingerprint) is not supported in this browser or device.";
+          fallbackNotice.className = "mt-4 text-sm text-red-600 text-center";
+          authBtn.parentNode.insertBefore(fallbackNotice, authBtn.nextSibling);
+          return;
+        }
+  
+        authBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          authBtn.disabled = true;
+          authBtn.textContent = 'Authenticating…';
+  
+          try {
+            // 1) Get assertion options
+            const beginResp = await fetch("{% url 'credential-authentication-begin' %}", {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+              },
+              body: JSON.stringify({})
+            });
+            if (!beginResp.ok) throw new Error(beginResp.statusText);
+  
+            // 2) Decode server options
+            const options = await beginResp.json();
+            options.challenge = b64urlToBuffer(options.challenge);
+            if (Array.isArray(options.allowCredentials)) {
+              options.allowCredentials = options.allowCredentials.map(c => ({
+                ...c,
+                id: b64urlToBuffer(c.id)
+              }));
+            }
+  
+            // 3) Ask browser to get assertion
+            const credential = await navigator.credentials.get({ publicKey: options });
+  
+            // 4) Build a JSON payload with base64url strings
+            const payload = {
+              id: credential.id,
+              rawId: bufferToB64url(credential.rawId),
+              type: credential.type,
+              response: {
+                authenticatorData: bufferToB64url(credential.response.authenticatorData),
+                clientDataJSON:   bufferToB64url(credential.response.clientDataJSON),
+                signature:        bufferToB64url(credential.response.signature),
+                userHandle: credential.response.userHandle
+                  ? bufferToB64url(credential.response.userHandle)
+                  : null
+              }
+            };
+  
+            // 5) Send it back to Django
+            const completeResp = await fetch("{% url 'credential-authentication-complete' %}", {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+              },
+              body: JSON.stringify(payload)
+            });
+            if (!completeResp.ok) throw new Error(completeResp.statusText);
+  
+            // Success!
+            window.location.href = "/redirect-after-login/";
+  
+          } catch (err) {
+            console.error('WebAuthn auth error:', err);
+  
+            // More user-friendly error message
+            let msg = err.message;
+            if (
+              msg.includes('NotAllowedError') ||
+              msg.includes('operation either timed out') ||
+              msg.includes('No available authenticator') ||
+              msg.includes('0 credentials')
+            ) {
+              msg = "No Face ID, fingerprint, or security key found or enrolled on this device. Please use your email and password.";
+            }
+            alert('⚠️ Authentication failed: ' + msg);
+          } finally {
+            authBtn.disabled = false;
+            authBtn.textContent = 'Sign in with Security Key or Biometrics';
+          }
+        });
+      });
+  </script>
+  
+{% endblock %}

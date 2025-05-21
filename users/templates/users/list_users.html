@@ -1,0 +1,182 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+{% block breadcrumbs %}
+<nav class="flex text-sm" aria-label="Breadcrumb">
+  <ol class="inline-flex items-center space-x-1 md:space-x-3">
+    <li class="inline-flex items-center">
+      <span class="text-gray-700 dark:text-gray-300">Admin</span>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-1 text-blue-600 dark:text-blue-400">
+          {% trans "User List" %}
+        </span>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm mt-6">
+  <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+    <form method="GET" class="flex flex-wrap gap-4 items-center justify-between">
+      <div class="flex flex-wrap gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{% trans "Role:" %}</label>
+          <select name="role" onchange="this.form.submit()" 
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="">{% trans "All" %}</option>
+            {% for value, label in roles %}
+              <option value="{{ value }}" {% if selected_role == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{% trans "Status:" %}</label>
+          <div class="flex gap-2">
+            <select name="status" onchange="this.form.submit()" 
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+              <option value="">{% trans "All" %}</option>
+              {% for value, label in statuses %}
+                <option value="{{ value }}" {% if selected_role == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            {% if selected_role or selected_status %}
+              <a href="{% url 'users:list_users' %}" 
+                class="inline-flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                {% trans "Reset" %}
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 sm:mt-0">
+        <a href="{% url 'users:create_user' %}" 
+          class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          {% trans "Create New User" %}
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <tr>
+          <th scope="col" class="px-6 py-3">{% trans "ID" %}</th>
+          <th scope="col" class="px-6 py-3">{% trans "Student ID" %}</th>
+          <th scope="col" class="px-6 py-3">{% trans "Name" %}</th>
+          <th scope="col" class="px-6 py-3">{% trans "Email" %}</th>
+          <th scope="col" class="px-6 py-3">{% trans "Status" %}</th>
+          <th scope="col" class="px-6 py-3">{% trans "Role" %}</th>
+          <th scope="col" class="px-6 py-3">{% trans "Memberships" %}</th>
+          <th scope="col" class="px-6 py-3">{% trans "Actions" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+          <td class="px-6 py-4">{{ user.id }}</td>
+          <td class="px-6 py-4">{{ user.student_id }}</td>
+          <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ user.name }}</td>
+          <td class="px-6 py-4">{{ user.email }}</td>
+          <td class="px-6 py-4">
+            {% if user.is_active == "active" %}
+              <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                {% trans "Active" %}
+              </span>
+            {% else %}
+              <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                {% trans "Inactive" %}
+              </span>
+            {% endif %}
+          </td>
+          <td class="px-6 py-4">{{ user.role }}</td>
+          <td class="px-6 py-4 text-sm">
+            {% for membership in user.memberships.all %}
+              <div class="mb-1">{{ membership.club.name }} 
+                <span class="text-xs text-gray-500 dark:text-gray-400">({{ membership.membership_type|title }})</span>
+              </div>
+            {% empty %}
+              <span class="text-gray-400 italic">{% trans "None" %}</span>
+            {% endfor %}
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex flex-col sm:flex-row gap-2">
+              <a href="{% url 'users:update_user' user.id %}" 
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                {% trans "Edit" %}
+              </a>
+              <a href="{% url 'users:delete_user' user.id %}" 
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                {% trans "Delete" %}
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="px-6 py-4 text-center">
+            <div class="text-center py-12">
+              <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{% trans "No users found" %}</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {% trans "Get started by creating a new user." %}
+              </p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="flex items-center justify-between px-6 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+      <div class="text-sm text-gray-600 dark:text-gray-400">
+        {% trans "Showing" %} {{ page_obj.start_index }} - {{ page_obj.end_index }} {% trans "of" %} {{ page_obj.paginator.count }} {% trans "users" %}
+      </div>
+    
+      <div class="inline-flex space-x-2">
+        {% if page_obj.has_previous %}
+          <a href="?{% if selected_role %}role={{ selected_role }}&{% endif %}{% if selected_status %}status={{ selected_status }}&{% endif %}page={{ page_obj.previous_page_number }}"
+             class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
+            &laquo; {% trans "Previous" %}
+          </a>
+        {% endif %}
+    
+        {% if page_obj.has_next %}
+          <a href="?{% if selected_role %}role={{ selected_role }}&{% endif %}{% if selected_status %}status={{ selected_status }}&{% endif %}page={{ page_obj.next_page_number }}"
+             class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
+            {% trans "Next" %} &raquo;
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<!-- Add Flowbite JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+{% endblock %}

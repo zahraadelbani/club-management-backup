@@ -1,0 +1,327 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+
+{% block breadcrumbs %}
+<nav class="text-sm text-gray-600 dark:text-gray-300 mb-4" aria-label="Breadcrumb">
+  <ol class="flex space-x-2 items-center">
+    <li class="inline-flex items-center">
+      <span>Club Leader</span>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <a href="{% url 'club_leader:club_members' %}" class="ml-1 text-blue-600 hover:underline dark:text-blue-400">
+          Members
+        </a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+
+<!-- Folder-style Tabs Container -->
+<div class="relative mt-6">
+  <!-- Folder Tabs -->
+  <div class="flex">
+    <button class="relative px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200" 
+            id="members-tab" data-tabs-target="#members" type="button" role="tab" aria-controls="members" aria-selected="true">
+      <span>{{ club.name }} Members</span>
+    </button>
+    
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="termination-tab" data-tabs-target="#termination" type="button" role="tab" aria-controls="termination" aria-selected="false">
+      <span>Termination Requests</span>
+    </button>
+    
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="pending-tab" data-tabs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="false">
+      <span>Membership Requests</span>
+    </button>
+  </div>
+  
+  <!-- Folder Content Area -->
+  <div class="relative bg-white dark:bg-gray-800 rounded-b-lg rounded-tr-lg overflow-hidden">
+    <!-- Members Tab Content -->
+    <div class="p-6 transition-opacity duration-200 ease-in" id="members" role="tabpanel" aria-labelledby="members-tab">
+      <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 pb-4">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+            </svg>
+          </div>
+          <input type="text" id="members-search" class="block p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search by name or email...">
+        </div>
+      </div>
+      
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" class="px-6 py-3">Member Name</th>
+              <th scope="col" class="px-6 py-3">Email</th>
+              <th scope="col" class="px-6 py-3">Joined Date</th>
+              {% if is_leader %}
+              <th scope="col" class="px-6 py-3">Actions</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for member in members %}
+            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+              <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ member.user.name }}</td>
+              <td class="px-6 py-4">{{ member.user.email }}</td>
+              <td class="px-6 py-4">{{ member.created_at|date:"M d, Y" }}</td>
+              {% if is_leader %}
+              <td class="px-6 py-4">
+                <form action="{% url 'club_leader:remove_member' member.id %}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to remove this member?');">
+                  {% csrf_token %}
+                  <button type="submit"  class="inline-flex items-center px-3 py-1 text-sm font-medium text-red-800 bg-red-100 rounded-full dark:bg-red-900 dark:text-red-300 transition-all duration-200 ease-in-out">Remove</button>
+                </form>
+              </td>
+              {% endif %}
+            </tr>
+            {% empty %}
+            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+              <td colspan="{% if user.get_role == 'Club Leader' %}4{% else %}3{% endif %}" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No members found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Termination Requests Tab Content -->
+    <div class="hidden p-6 opacity-0 transition-opacity duration-200 ease-in" id="termination" role="tabpanel" aria-labelledby="termination-tab">
+      <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 pb-4">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+            </svg>
+          </div>
+          <input type="text" id="termination-search" class="block p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search by name...">
+        </div>
+      </div>
+      
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" class="px-6 py-3">Member Name</th>
+              <th scope="col" class="px-6 py-3">Requested At</th>
+              <th scope="col" class="px-6 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for request in requests %}
+            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+              <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ request.membership.user.name }}</td>
+              <td class="px-6 py-4">{{ request.created_at|date:"M d, Y" }}</td>
+              <td class="px-6 py-4">
+                <form action="{% url 'club_leader:approve_termination' request.id %}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to approve this termination request?');">
+
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+
+                    <button type="submit" class="inline-flex items-center px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300 transition-all duration-200 ease-in-out"
+                    >Approve</button>
+                  </form>
+                  
+                </form>
+                <form action="{% url 'club_leader:reject_termination' request.id %}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to reject this termination request?');">
+
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+
+                  <button type="submit" class="inline-flex items-center px-3 py-1 text-sm font-medium text-red-800 bg-red-100 rounded-full dark:bg-red-900 dark:text-red-300 transition-all duration-200 ease-in-out"
+                  >Reject</button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+              <td colspan="3" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No pending requests.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pending Requests Tab Content -->
+    <div class="hidden p-6 opacity-0 transition-opacity duration-200 ease-in" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+      <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 pb-4">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+            </svg>
+          </div>
+          <input type="text" id="pending-search" class="block p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search by name or email...">
+        </div>
+      </div>
+      
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" class="px-6 py-3">User</th>
+              <th scope="col" class="px-6 py-3">Email</th>
+              <th scope="col" class="px-6 py-3">Club</th>
+              <th scope="col" class="px-6 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in membership_requests %}
+              <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ m.user.name }}</td>
+                <td class="px-6 py-4">{{ m.user.email }}</td>
+                <td class="px-6 py-4">{{ m.club.name }}</td>
+                <td class="px-6 py-4">
+                  <!-- Approve Form -->
+                  <form method="post" action="{% url 'club_leader:update_membership_status' m.id 'approve' %}" onsubmit="return confirm('Are you sure you want to approve this membership request?');" class="inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="inline-flex items-center px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300 transition-all duration-200 ease-in-out">
+                      Approve
+                    </button>
+                  </form>
+          
+                  <!-- Reject Form -->
+                  <form method="post" action="{% url 'club_leader:update_membership_status' m.id 'reject' %}" onsubmit="return confirm('Are you sure you want to reject this membership request?');" class="inline ml-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="inline-flex items-center px-3 py-1 text-sm font-medium text-red-800 bg-red-100 rounded-full dark:bg-red-900 dark:text-red-300 transition-all duration-200 ease-in-out">
+                      Reject
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                <td colspan="4" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No pending requests.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get the tab from URL parameter or localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab') || localStorage.getItem('activeTab') || 'members';
+
+    // Function to activate a tab
+    function activateTab(tabId) {
+      // Update all tabs to inactive state
+      document.querySelectorAll('[role="tab"]').forEach(t => {
+        t.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'z-10');
+        t.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300', 'z-0');
+        t.setAttribute('aria-selected', 'false');
+      });
+
+      // Hide all tab panels
+      document.querySelectorAll('[role="tabpanel"]').forEach(panel => {
+        panel.classList.add('hidden', 'opacity-0');
+      });
+
+      // Activate the selected tab
+      const tab = document.querySelector(`[data-tabs-target="#${tabId}"]`);
+      const panel = document.getElementById(tabId);
+
+      if (tab && panel) {
+        tab.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300', 'z-0');
+        tab.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'z-10');
+        tab.setAttribute('aria-selected', 'true');
+
+        panel.classList.remove('hidden');
+        setTimeout(() => {
+          panel.classList.remove('opacity-0');
+        }, 10);
+      }
+
+      // Store the active tab in localStorage
+      localStorage.setItem('activeTab', tabId);
+
+      // Update URL without reloading the page
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tabId);
+      window.history.replaceState({}, '', url);
+    }
+
+    // Activate the tab from URL parameter or localStorage on page load
+    activateTab(activeTab);
+
+    // Add click handlers for tabs
+    document.querySelectorAll('[role="tab"]').forEach(tab => {
+      tab.addEventListener('click', function(e) {
+        e.preventDefault();
+        const tabId = this.dataset.tabsTarget.replace('#', '');
+        activateTab(tabId);
+      });
+    });
+
+    // Handle browser back/forward navigation
+    window.addEventListener('popstate', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const activeTab = urlParams.get('tab') || localStorage.getItem('activeTab') || 'members';
+      activateTab(activeTab);
+    });
+
+    // Search for Members
+    document.getElementById("members-search")?.addEventListener("keyup", function () {
+      const filter = this.value.toLowerCase();
+      const rows = document.querySelectorAll("#members tbody tr");
+      rows.forEach(row => {
+        const name = row.cells[0].textContent.toLowerCase();
+        const email = row.cells[1].textContent.toLowerCase();
+        row.style.display = (name.includes(filter) || email.includes(filter)) ? "" : "none";
+      });
+    });
+
+    // Search for Termination Requests
+    document.getElementById("termination-search")?.addEventListener("keyup", function () {
+      const filter = this.value.toLowerCase();
+      const rows = document.querySelectorAll("#termination tbody tr");
+      rows.forEach(row => {
+        const name = row.cells[0].textContent.toLowerCase();
+        row.style.display = name.includes(filter) ? "" : "none";
+      });
+    });
+
+    // Search for Pending Requests
+    document.getElementById("pending-search")?.addEventListener("keyup", function () {
+      const filter = this.value.toLowerCase();
+      const rows = document.querySelectorAll("#pending tbody tr");
+      rows.forEach(row => {
+        const name = row.cells[0].textContent.toLowerCase();
+        const email = row.cells[1].textContent.toLowerCase();
+        row.style.display = (name.includes(filter) || email.includes(filter)) ? "" : "none";
+      });
+    });
+
+    // Ensure first tab is visible on initial page load
+    const firstTab = document.querySelector('[role="tab"]');
+    if (firstTab) {
+      const firstTabId = firstTab.dataset.tabsTarget.replace('#', '');
+      const firstPanel = document.getElementById(firstTabId);
+      if (firstPanel) {
+        firstPanel.classList.remove('hidden', 'opacity-0');
+      }
+    }
+  });
+</script>
+
+
+{% endblock %}

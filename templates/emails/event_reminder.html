@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <body style="font-family: sans-serif; color: #333;">
+    <h2>Hello {{ user.name }},</h2>
+
+    <p>This is a reminder for the upcoming event:</p>
+
+    <h3>{{ event.title }}</h3>
+    <p><strong>Club:</strong> {{ event.club.name }}</p>
+    <p><strong>Date & Time:</strong> {{ event.event_date|date:"l, F d, Y @ h:i A" }}</p>
+    <p><strong>Created By:</strong> {{ event.created_by.name }}</p>
+
+    {% if image_url %}
+      <p><strong>Event Image:</strong></p>
+      <img src="{{ image_url }}" alt="Event Image" style="max-width: 100%; border-radius: 8px;">
+    {% endif %}
+
+    <p>Thanks,<br>The Activity Center Team</p>
+  </body>
+</html>

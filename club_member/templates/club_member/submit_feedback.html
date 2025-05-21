@@ -1,0 +1,270 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% block content %}
+
+{% block breadcrumbs %}
+<nav class="text-sm text-gray-600 dark:text-gray-300 mb-4" aria-label="Breadcrumb">
+  <ol class="flex space-x-2 items-center">
+    <li class="inline-flex items-center">
+      <span>Club Member</span>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <a href="{% url 'club_member:submit_feedback' %}" class="ml-1 text-blue-600 hover:underline dark:text-blue-400">
+          Submit Feedback
+        </a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+<!-- Folder-style Tabs Container -->
+<div class="relative mt-6">
+  <!-- Folder Tabs -->
+  <div class="flex">
+    <button class="relative px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200" 
+            id="submit-tab" data-tabs-target="#submit" type="button" role="tab" aria-controls="submit" aria-selected="true">
+      <span>Submit Feedback</span>
+    </button>
+    
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="history-tab" data-tabs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">
+      <span>Feedback History</span>
+    </button>
+  </div>
+  
+  <!-- Folder Content Area -->
+  <div class="relative bg-white dark:bg-gray-800 rounded-b-lg rounded-tr-lg shadow-md overflow-hidden">
+    <!-- Submit Feedback Tab Content -->
+    <div class="p-6" id="submit" role="tabpanel" aria-labelledby="submit-tab">
+      {% if error %}
+        <div class="p-4 mb-4 text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-red-900 dark:text-red-300" role="alert">
+          {{ error }}
+        </div>
+      {% endif %}
+
+      {% if clubs %}
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+          <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Club Selector -->
+            <div class="space-y-2">
+              <label for="club_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Select Club <span class="text-red-500">*</span>
+              </label>
+              <select name="club_id" id="club_id" required class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm">
+                {% for club in clubs %}
+                  <option value="{{ club.id }}">{{ club.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Category -->
+            <div class="space-y-2">
+              <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Category <span class="text-red-500">*</span>
+              </label>
+              <select name="category" id="category" required class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm">
+                <option value="">-- Choose --</option>
+                <option value="complaint">Complaint (Anonymous)</option>
+                <option value="suggestion">Suggestion (Name will be shown)</option>
+              </select>
+            </div>
+
+            <!-- Feedback Content -->
+            <div class="space-y-2">
+              <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Your Message <span class="text-red-500">*</span>
+              </label>
+              <textarea name="content" id="content" rows="5" required class="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-base p-4 min-h-[150px] resize-y"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end space-x-4 pt-4">
+              <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800">
+                Submit
+              </button>
+            </div>
+          </form>
+        </div>
+      {% else %}
+        <p class="text-gray-500 dark:text-gray-400">You are not currently a member of any club to submit feedback.</p>
+      {% endif %}
+    </div>
+
+    <!-- Feedback History Tab Content -->
+    <div class="hidden p-6 opacity-0" id="history" role="tabpanel" aria-labelledby="history-tab">
+      {% if feedback_list %}
+        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 pb-4">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+              </svg>
+            </div>
+            <input type="text" id="feedback-search" class="block p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search feedback...">
+          </div>
+
+          <!-- Per Page Selector -->
+          <form method="get" class="flex items-center space-x-2">
+            <label for="per_page" class="text-xs text-gray-700 dark:text-gray-300">Items per page:</label>
+            <select name="per_page" id="per_page" onchange="this.form.submit()" class="w-20 text-xs rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white py-1.5">
+              <option value="5" {% if per_page == 5 %}selected{% endif %}>5</option>
+              <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+              <option value="20" {% if per_page == 20 %}selected{% endif %}>20</option>
+            </select>
+          </form>
+        </div>
+
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+          <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+              <tr>
+                <th scope="col" class="px-6 py-3">Club</th>
+                <th scope="col" class="px-6 py-3">Category</th>
+                <th scope="col" class="px-6 py-3">Content</th>
+                <th scope="col" class="px-6 py-3">Status</th>
+                <th scope="col" class="px-6 py-3">Submitted At</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+              {% for feedback in feedback_list %}
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ feedback.club.name }}</td>
+                <td class="px-6 py-4">{{ feedback.get_category_display }}</td>
+                <td class="px-6 py-4">
+                  {% if feedback.category == "complaint" %}
+                    <span class="italic text-gray-500 dark:text-gray-400">{{ feedback.content }}</span>
+                  {% else %}
+                    {{ feedback.content }}
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                  {% if feedback.status == 'pending' %}
+                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-full dark:bg-yellow-900 dark:text-yellow-300">Pending</span>
+                  {% else %}
+                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300">Reviewed</span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4">{{ feedback.created_at }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No feedback submitted yet.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-4 flex justify-center space-x-2">
+          {% if feedback_list.has_previous %}
+            <a href="?page={{ feedback_list.previous_page_number }}&per_page={{ per_page }}" class="px-3 py-1 border rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:border-gray-600 dark:text-gray-300">&laquo; Prev</a>
+          {% endif %}
+
+          <span class="px-3 py-1 border rounded bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">{{ feedback_list.number }} of {{ feedback_list.paginator.num_pages }}</span>
+
+          {% if feedback_list.has_next %}
+            <a href="?page={{ feedback_list.next_page_number }}&per_page={{ per_page }}" class="px-3 py-1 border rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:border-gray-600 dark:text-gray-300">Next &raquo;</a>
+          {% endif %}
+        </div>
+      {% else %}
+        <p class="text-gray-500 dark:text-gray-400">No feedback history available.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get the tab from URL parameter or localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab') || localStorage.getItem('activeTab') || 'submit';
+
+    // Function to activate a tab
+    function activateTab(tabId) {
+      // Update all tabs to inactive state
+      document.querySelectorAll('[role="tab"]').forEach(t => {
+        t.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'z-10');
+        t.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300', 'z-0');
+        t.setAttribute('aria-selected', 'false');
+      });
+
+      // Hide all tab panels
+      document.querySelectorAll('[role="tabpanel"]').forEach(panel => {
+        panel.classList.add('hidden', 'opacity-0');
+      });
+
+      // Activate the selected tab
+      const tab = document.querySelector(`[data-tabs-target="#${tabId}"]`);
+      const panel = document.getElementById(tabId);
+
+      if (tab && panel) {
+        tab.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300', 'z-0');
+        tab.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'z-10');
+        tab.setAttribute('aria-selected', 'true');
+
+        panel.classList.remove('hidden');
+        setTimeout(() => {
+          panel.classList.remove('opacity-0');
+        }, 10);
+      }
+
+      // Store the active tab in localStorage
+      localStorage.setItem('activeTab', tabId);
+
+      // Update URL without reloading the page
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tabId);
+      window.history.replaceState({}, '', url);
+    }
+
+    // Activate the tab from URL parameter or localStorage on page load
+    activateTab(activeTab);
+
+    // Add click handlers for tabs
+    document.querySelectorAll('[role="tab"]').forEach(tab => {
+      tab.addEventListener('click', function(e) {
+        e.preventDefault();
+        const tabId = this.dataset.tabsTarget.replace('#', '');
+        activateTab(tabId);
+      });
+    });
+
+    // Handle browser back/forward navigation
+    window.addEventListener('popstate', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const activeTab = urlParams.get('tab') || localStorage.getItem('activeTab') || 'submit';
+      activateTab(activeTab);
+    });
+
+    // Search functionality
+    document.getElementById("feedback-search")?.addEventListener("keyup", function () {
+      const filter = this.value.toLowerCase();
+      const rows = document.querySelectorAll("#history tbody tr");
+      rows.forEach(row => {
+        const club = row.cells[0].textContent.toLowerCase();
+        const category = row.cells[1].textContent.toLowerCase();
+        const content = row.cells[2].textContent.toLowerCase();
+        row.style.display = (club.includes(filter) || category.includes(filter) || content.includes(filter)) ? "" : "none";
+      });
+    });
+
+    // Ensure first tab is visible on initial page load
+    const firstTab = document.querySelector('[role="tab"]');
+    if (firstTab) {
+      const firstTabId = firstTab.dataset.tabsTarget.replace('#', '');
+      const firstPanel = document.getElementById(firstTabId);
+      if (firstPanel) {
+        firstPanel.classList.remove('hidden', 'opacity-0');
+      }
+    }
+  });
+</script>
+
+{% endblock %}

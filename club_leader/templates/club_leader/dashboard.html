@@ -1,0 +1,442 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% block content %}
+{% load i18n %}
+{% block breadcrumbs %}
+<nav class="flex text-sm" aria-label="Breadcrumb">
+  <ol class="inline-flex items-center space-x-1 md:space-x-3">
+    <li class="inline-flex items-center">
+      <span class="text-gray-700 dark:text-gray-300">Club Leader</span>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <a href="{% url 'club_leader:dashboard' %}" class="ml-1 text-blue-600 hover:underline dark:text-blue-400">
+          Dashboard
+        </a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+<!-- CLUB NAME -->
+<p class="max-w-lg text-2xl md:text-3xl font-semibold leading-relaxed text-gray-900 dark:text-white">
+  {{ club.name }}
+</p>
+
+<!-- ANALYTICS SECTION -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 my-4 md:my-6">
+  <!-- Total Members -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 md:p-6">
+    <div class="flex items-center space-x-4">
+      <div class="bg-blue-600 text-white rounded-xl p-2 md:p-3">
+        <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M9 20H4v-2a3 3 0 015.356-1.857M15 11a4 4 0 10-8 0 4 4 0 008 0zm6 0a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium">Total Members</p>
+        <h3 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+          {{ analytics.total_members }}
+        </h3>
+      </div>
+    </div>
+    <a href="{% url 'club_leader:club_members' %}"
+      class="text-indigo-600 dark:text-indigo-400 text-xs md:text-sm font-medium mt-3 md:mt-4 inline-block">View all</a>
+  </div>
+
+  <!-- Total Events -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 md:p-6">
+    <div class="flex items-center space-x-4">
+      <div class="bg-blue-600 text-white rounded-xl p-2 md:p-3">
+        <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4 4m4-4l-4-4" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium">Total Events</p>
+        <h3 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+          {{ analytics.total_events }}
+        </h3>
+      </div>
+    </div>
+    <a href="{% url 'club_leader:list_all_events' %}"
+      class="text-indigo-600 dark:text-indigo-400 text-xs md:text-sm font-medium mt-3 md:mt-4 inline-block">View all</a>
+  </div>
+
+  <!-- Total Announcements -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 md:p-6">
+    <div class="flex items-center space-x-4">
+      <div class="bg-blue-600 text-white rounded-xl p-2 md:p-3">
+        <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium">Total Announcements</p>
+        <h3 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+          {{ announcements.count }}
+        </h3>
+      </div>
+    </div>
+    <a href="{% url 'club_leader:list_announcements' %}"
+      class="text-indigo-600 dark:text-indigo-400 text-xs md:text-sm font-medium mt-3 md:mt-4 inline-block">View all</a>
+  </div>
+</div>
+
+<!-- FOLDER-STYLE TABS CONTAINER -->
+<div class="relative mt-4 md:mt-6">
+  <!-- FOLDER TABS -->
+  <div class="flex">
+    <button class="relative px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 z-10" 
+            id="membership-tab" data-tabs-target="#membership" type="button" role="tab" aria-controls="membership" aria-selected="true">
+      <span>Membership Requests</span>
+    </button>
+    
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="events-tab" data-tabs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="false">
+      <span>Pending Events</span>
+    </button>
+    
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="termination-tab" data-tabs-target="#termination" type="button" role="tab" aria-controls="termination" aria-selected="false">
+      <span>Termination Requests</span>
+    </button>
+
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="complaints-tab" data-tabs-target="#complaints" type="button" role="tab" aria-controls="complaints" aria-selected="false">
+      <span>Pending Complaints</span>
+    </button>
+
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="suggestions-tab" data-tabs-target="#suggestions" type="button" role="tab" aria-controls="suggestions" aria-selected="false">
+      <span>Suggestions</span>
+    </button>
+  </div>
+  
+  <!-- FOLDER CONTENT AREA -->
+  <div class="relative bg-white dark:bg-gray-800 rounded-b-lg rounded-tr-lg shadow-md overflow-hidden">
+    <!-- MEMBERSHIP REQUESTS TAB -->
+    <div class="p-6" id="membership" role="tabpanel" aria-labelledby="membership-tab">
+      {% if membership_requests %}
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" id="membershipRequestsTable">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" class="px-4 md:px-6 py-3">Member</th>
+              <th scope="col" class="px-4 md:px-6 py-3">Email</th>
+              <th scope="col" class="px-4 md:px-6 py-3">Requested At</th>
+              <th scope="col" class="px-4 md:px-6 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+            {% for request in membership_requests %}
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <td class="px-4 md:px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                {{ request.user.name }}
+              </td>
+              <td class="px-4 md:px-6 py-4">
+                {{ request.user.email }}
+              </td>
+              <td class="px-4 md:px-6 py-4">
+                {{ request.created_at|date:"M d, Y H:i" }}
+              </td>
+              <td class="px-4 md:px-6 py-4">
+                <div class="flex flex-wrap gap-2">
+                  <form method="post" action="{% url 'club_leader:update_membership_status' request.id 'approve' %}" onsubmit="return confirm('Are you sure you want to approve this membership request?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'club_leader:dashboard' %}?tab=membership">
+                    <button type="submit" class="inline-flex items-center px-2 md:px-3 py-1 text-xs md:text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300 transition-all duration-200 ease-in-out">
+                      Approve
+                    </button>
+                  </form>
+                  
+                  <form method="post" action="{% url 'club_leader:update_membership_status' request.id 'reject' %}" onsubmit="return confirm('Are you sure you want to reject this membership request?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'club_leader:dashboard' %}?tab=membership">
+                    <button type="submit" class="inline-flex items-center px-2 md:px-3 py-1 text-xs md:text-sm font-medium text-red-800 bg-red-100 rounded-full dark:bg-red-900 dark:text-red-300 transition-all duration-200 ease-in-out">
+                      Reject
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        No pending membership requests.
+      </p>
+      {% endif %}
+    </div>
+
+    <!-- PENDING EVENTS TAB -->
+    <div class="hidden p-6 opacity-0" id="events" role="tabpanel" aria-labelledby="events-tab">
+      {% if pending_events %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {% for event in pending_events %}
+        <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+          {% if event.image %}
+          <img class="w-full h-40 md:h-48 object-cover" src="{{ event.image.url }}" alt="Event Image" />
+          {% endif %}
+          <div class="p-3 md:p-4">
+            <h5 class="text-base md:text-lg font-semibold text-gray-800 dark:text-white mb-2">
+              {{ event.title }}
+            </h5>
+            <p class="text-xs md:text-sm text-gray-600 dark:text-gray-300 mb-2">
+              <strong>Date:</strong> {{ event.event_date|date:"F d, Y" }}
+            </p>
+            <div class="space-y-1 md:space-y-2 mt-2 md:mt-3">
+              <p class="text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                <strong>Participants:</strong> {{ event.participants }}
+              </p>
+              <p class="text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                <strong>Total Cost:</strong> TL{{ event.total_cost }}
+              </p>
+            </div>
+            <div class="mt-3 md:mt-4">
+              <a href="{% url 'club_leader:edit_event' event.id %}"
+              class="inline-flex items-center px-2 md:px-3 py-1 text-xs md:text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300 transition-all duration-200 ease-in-out">View
+                Details</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        No pending event requests.
+      </p>
+      {% endif %}
+    </div>
+
+    <!-- TERMINATION REQUESTS TAB -->
+    <div class="hidden p-6 opacity-0" id="termination" role="tabpanel" aria-labelledby="termination-tab">
+      {% if termination_requests %}
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" id="terminationRequestsTable">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" class="px-4 md:px-6 py-3">Member</th>
+              <th scope="col" class="px-4 md:px-6 py-3">Requested At</th>
+              <th scope="col" class="px-4 md:px-6 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+            {% for request in termination_requests %}
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <td class="px-4 md:px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                {{ request.membership.user.name }}
+              </td>
+              <td class="px-4 md:px-6 py-4">
+                {{ request.created_at|date:"M d, Y" }}
+              </td>
+              <td class="px-4 md:px-6 py-4">
+                <div class="flex flex-wrap gap-2">
+                  <form method="post" action="{% url 'club_leader:approve_termination' request.id %}" onsubmit="return confirm('Are you sure you want to approve this termination request?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'club_leader:dashboard' %}?tab=termination">
+                    <button type="submit" class="inline-flex items-center px-2 md:px-3 py-1 text-xs md:text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300 transition-all duration-200 ease-in-out">
+                      Approve
+                    </button>
+                  </form>
+                  
+                  <form method="post" action="{% url 'club_leader:reject_termination' request.id %}" onsubmit="return confirm('Are you sure you want to reject this termination request?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'club_leader:dashboard' %}?tab=termination">
+                    <button type="submit" class="inline-flex items-center px-2 md:px-3 py-1 text-xs md:text-sm font-medium text-red-800 bg-red-100 rounded-full dark:bg-red-900 dark:text-red-300 transition-all duration-200 ease-in-out">
+                      Reject
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        No termination requests pending.
+      </p>
+      {% endif %}
+    </div>
+
+    <!-- COMPLAINTS TAB -->
+    <div class="hidden p-6 opacity-0" id="complaints" role="tabpanel" aria-labelledby="complaints-tab">
+      {% if complaints_page %}
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" id="complaintsTable">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" class="px-4 md:px-6 py-3">Submitted On</th>
+              <th scope="col" class="px-4 md:px-6 py-3">Content</th>
+              <th scope="col" class="px-4 md:px-6 py-3">Action</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+            {% for complaint in complaints_page %}
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <td class="px-4 md:px-6 py-4">{{ complaint.created_at|date:"Y-m-d H:i" }}</td>
+              <td class="px-4 md:px-6 py-4">{{ complaint.content }}</td>
+              <td class="px-4 md:px-6 py-4">
+                {% if complaint.status == 'pending' %}
+                <form method="post" action="{% url 'club_leader:review_feedback' complaint.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{% url 'club_leader:dashboard' %}?tab=complaints">
+                  <button type="submit" class="inline-flex items-center px-2 md:px-3 py-1 text-xs md:text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300 transition-all duration-200 ease-in-out">
+                    Mark as Reviewed
+                  </button>
+                </form>
+                {% else %}
+                <span class="inline-flex items-center px-2 md:px-3 py-1 text-xs md:text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300 transition-all duration-200 ease-in-out">Reviewed</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-sm text-gray-500 dark:text-gray-400">No pending complaints.</p>
+      {% endif %}
+    </div>
+
+    <!-- SUGGESTIONS TAB -->
+    <div class="hidden p-6 opacity-0" id="suggestions" role="tabpanel" aria-labelledby="suggestions-tab">
+      {% if suggestions_page %}
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" id="suggestionsTable">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" class="px-4 md:px-6 py-3">Submitted By</th>
+              <th scope="col" class="px-4 md:px-6 py-3">Submitted On</th>
+              <th scope="col" class="px-4 md:px-6 py-3">Content</th>
+              <th scope="col" class="px-4 md:px-6 py-3">Status</th>
+              <th scope="col" class="px-4 md:px-6 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+            {% for suggestion in suggestions_page %}
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <td class="px-4 md:px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ suggestion.submitted_by.name }}</td>
+              <td class="px-4 md:px-6 py-4">{{ suggestion.created_at|date:"Y-m-d H:i" }}</td>
+              <td class="px-4 md:px-6 py-4">{{ suggestion.content }}</td>
+              <td class="px-4 md:px-6 py-4">
+                {% if suggestion.status == 'pending' %}
+                <span class="inline-flex items-center px-2 md:px-3 py-1 text-xs md:text-sm font-medium text-yellow-800 bg-yellow-100 rounded-full dark:bg-yellow-900 dark:text-yellow-300 transition-all duration-200 ease-in-out">Pending</span>
+                {% else %}
+                <span class="inline-flex items-center px-2 md:px-3 py-1 text-xs md:text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300 transition-all duration-200 ease-in-out">Reviewed</span>
+                {% endif %}
+              </td>
+              <td class="px-4 md:px-6 py-4">
+                {% if suggestion.status == 'pending' %}
+                <form method="post" action="{% url 'club_leader:review_feedback' suggestion.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{% url 'club_leader:dashboard' %}?tab=suggestions">
+                  <button type="submit" class="inline-flex items-center px-2 md:px-3 py-1 text-xs md:text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300 transition-all duration-200 ease-in-out">
+                    Mark as Reviewed
+                  </button>
+                </form>
+                {% else %}
+                <span class="text-green-500 font-semibold text-xs">Reviewed</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-sm text-gray-500 dark:text-gray-400">No pending suggestions.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get the tab from URL parameter or localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab') || localStorage.getItem('activeTab') || 'membership';
+
+    // Function to activate a tab
+    function activateTab(tabId) {
+      // Update all tabs to inactive state
+      document.querySelectorAll('[role="tab"]').forEach(t => {
+        t.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'z-10');
+        t.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300', 'z-0');
+        t.setAttribute('aria-selected', 'false');
+      });
+
+      // Hide all tab panels
+      document.querySelectorAll('[role="tabpanel"]').forEach(panel => {
+        panel.classList.add('hidden', 'opacity-0');
+      });
+
+      // Activate the selected tab
+      const tab = document.querySelector(`[data-tabs-target="#${tabId}"]`);
+      const panel = document.getElementById(tabId);
+
+      if (tab && panel) {
+        tab.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300', 'z-0');
+        tab.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'z-10');
+        tab.setAttribute('aria-selected', 'true');
+
+        panel.classList.remove('hidden');
+        setTimeout(() => {
+          panel.classList.remove('opacity-0');
+        }, 10);
+      }
+
+      // Store the active tab in localStorage
+      localStorage.setItem('activeTab', tabId);
+
+      // Update URL without reloading the page
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tabId);
+      window.history.replaceState({}, '', url);
+    }
+
+    // Check if this is the first visit to the dashboard
+    const isFirstVisit = !localStorage.getItem('hasVisitedDashboard');
+    
+    if (isFirstVisit) {
+      // If it's the first visit, activate the first tab and mark as visited
+      const firstTab = document.querySelector('[role="tab"]');
+      if (firstTab) {
+        const firstTabId = firstTab.dataset.tabsTarget.replace('#', '');
+        activateTab(firstTabId);
+        localStorage.setItem('hasVisitedDashboard', 'true');
+      }
+    } else {
+      // For subsequent visits, use the stored tab or default
+      activateTab(activeTab);
+    }
+
+    // Add click handlers for tabs
+    document.querySelectorAll('[role="tab"]').forEach(tab => {
+      tab.addEventListener('click', function(e) {
+        e.preventDefault();
+        const tabId = this.dataset.tabsTarget.replace('#', '');
+        activateTab(tabId);
+      });
+    });
+
+    // Handle browser back/forward navigation
+    window.addEventListener('popstate', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const activeTab = urlParams.get('tab') || localStorage.getItem('activeTab') || 'membership';
+      activateTab(activeTab);
+    });
+  });
+</script>
+
+{% endblock %}

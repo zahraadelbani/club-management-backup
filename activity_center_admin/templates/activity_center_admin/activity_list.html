@@ -1,0 +1,85 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% trans "Review Club Activities" %}</title>
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+  <header>
+    <h1>{% trans "Club Activities" %}</h1>
+    <nav>
+      <a href="{% url 'activity_center_admin:dashboard' %}">{% trans "Dashboard" %}</a>
+    </nav>
+  </header>
+  <main>
+    <ul>
+{% block content %}
+
+
+<div class="p-6">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">{% trans "Review Club Activities" %}</h1>
+  </div>
+
+  {% if activities %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for activity in activities %}
+        <div class="bg-white shadow-md rounded-lg p-5 border border-gray-200 hover:shadow-lg transition">
+          <h2 class="text-lg font-semibold text-blue-700 mb-1">{{ activity.title }}</h2>
+          <p class="text-sm text-gray-600 mb-2">{% trans "Club" %}: <strong>{{ activity.club.name }}</strong></p>
+
+          <div class="mb-3">
+            <span class="text-sm font-medium">{% trans "Status" %}:</span>
+            <span class="capitalize {% if activity.approval_status == 'approved' %}text-green-600{% elif activity.approval_status == 'rejected' %}text-red-600{% else %}text-yellow-600{% endif %}">
+              {% if activity.approval_status == 'approved' %}
+                {% trans "Approved" %}
+              {% elif activity.approval_status == 'rejected' %}
+                {% trans "Rejected" %}
+              {% else %}
+                {% if activity.rescheduled %}
+                  {% trans "Pending (Meeting Scheduled)" %}
+                {% else %}
+                  {% trans "Pending" %}
+                {% endif %}
+              {% endif %}
+            </span>
+          </div>
+          {% if activity.latitude and activity.longitude %}
+  <div class="mb-3">
+    <span class="text-sm font-medium">{% trans "Location" %}:</span>
+    <a href="https://www.google.com/maps?q={{ activity.latitude }},{{ activity.longitude }}" 
+       target="_blank" 
+       class="text-blue-600 hover:underline ml-1">
+       📍 {{ activity.location_name|default:"View on Google Maps" }}
+    </a>
+  </div>
+{% endif %}
+
+
+          <div class="flex flex-wrap gap-3 mt-4">
+            <a href="{% url 'activity_center_admin:event_update' activity.id %}" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition text-sm">
+              ✏️ {% trans "Edit" %}
+            </a>
+            <a href="{% url 'activity_center_admin:activity_approve' activity.id %}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition text-sm">
+              ✅ {% trans "Approve" %}
+            </a>
+            <a href="{% url 'activity_center_admin:activity_reject' activity.id %}" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm">
+              ❌ {% trans "Reject" %}
+            </a>
+            <a href="{% url 'activity_center_admin:schedule_meeting' activity.id %}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition text-sm">
+              📅 {% trans "Schedule Meeting" %}
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-gray-500 mt-6 text-center">{% trans "No activities available." %}</p>
+  {% endif %}
+</div>
+{% endblock %}

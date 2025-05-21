@@ -1,0 +1,111 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+
+<style>
+  
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-secondary {
+  background-color: white;
+  color: var(--text-color);
+  border-color: var(--border-light);
+}
+</style>
+
+<div class="max-w-2xl mx-auto mt-10 px-4">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white text-center">Create Global Announcement</h1>
+    </div>
+    <div class="p-6">
+      <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        <div>
+          <label for="id_title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title *</label>
+          <input type="text" name="title" id="id_title" value="{{ form.title.value|default_if_none:'' }}" required
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+          {% if form.title.help_text %}
+            <small class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ form.title.help_text }}</small>
+          {% endif %}
+          {% for error in form.title.errors %}
+            <div class="text-red-500 text-sm mt-1">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div>
+          <label for="id_content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content *</label>
+          <textarea name="content" id="id_content" rows="5" required
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">{{ form.content.value|default_if_none:'' }}</textarea>
+          {% if form.content.help_text %}
+            <small class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ form.content.help_text }}</small>
+          {% endif %}
+          {% for error in form.content.errors %}
+            <div class="text-red-500 text-sm mt-1">{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% if form.image %}
+        <div>
+          <label for="id_image" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Image</label>
+          <input type="file" name="image" id="id_image"
+            class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400">
+          {% if form.image.help_text %}
+            <small class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ form.image.help_text }}</small>
+          {% endif %}
+          {% for error in form.image.errors %}
+            <div class="text-red-500 text-sm mt-1">{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if form.attachment %}
+        <div>
+          <label for="id_attachment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Attachment</label>
+          <input type="file" name="attachment" id="id_attachment"
+            class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400">
+          {% if form.attachment.help_text %}
+            <small class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ form.attachment.help_text }}</small>
+          {% endif %}
+          {% for error in form.attachment.errors %}
+            <div class="text-red-500 text-sm mt-1">{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+       <!-- Visible Checkbox -->
+       <div class="mb-4">
+        <div class="flex items-center">
+          <input type="checkbox" name="visible" id="id_visible" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" checked>
+          <label for="id_visible" class="ml-2 text-sm text-gray-700 dark:text-gray-300">Should the announcement be visible to all members?</label>
+        </div>
+        {% if form.visible.help_text %}
+          <small class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ form.visible.help_text }}</small>
+        {% endif %}
+        {% for error in form.visible.errors %}
+          <div class="text-red-500 text-sm mt-1">{{ error }}</div>
+        {% endfor %}
+      </div>
+        <div class="flex justify-end gap-4 pt-4">
+          <a href="{% url 'activity_center_admin:announcement_list' %}"
+            class="btn btn-secondary hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">
+            Cancel
+          </a>
+          <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            Create Announcement
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

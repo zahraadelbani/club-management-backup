@@ -1,0 +1,358 @@
+{% extends "navbar.html" %}
+{% block content %}
+{% load i18n %}
+
+
+{% block breadcrumbs %}
+<nav class="flex text-sm" aria-label="Breadcrumb">
+  <ol class="inline-flex items-center space-x-1 md:space-x-3">
+    <li class="inline-flex items-center">
+      <span class="text-gray-700 dark:text-gray-300">Club Leader</span>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <a href="{% url 'club_leader:calendar' %}" class="ml-1 text-blue-600 hover:underline dark:text-blue-400">
+          Events 
+        </a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+<!-- FullCalendar Styles & Scripts -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales-all.min.js"></script>
+
+<style>
+/* FullCalendar specific styles */
+:root {
+  --calendar-bg: #fcfdfe;
+  --sidebar-bg: #f8fafc;
+  --primary-color: #4f46e5;
+  --primary-light: #e0e7ff;
+  --primary-dark: #3730a3;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --text-color: #334155;
+  --text-light: #64748b;
+  --border-radius: 14px;
+  --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --border-light: 1px solid #e2e8f0;
+}
+
+.fc {
+  --fc-border-color: #e2e8f0;
+  --fc-daygrid-day-bg-color: #ffffff;
+  --fc-neutral-bg-color: #f8fafc;
+  --fc-page-bg-color: #ffffff;
+  --fc-today-bg-color: #f1f5f9;
+  --fc-event-bg-color: var(--primary-dark);
+  --fc-event-border-color: var(--primary-color);
+  font-family: inherit;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+  margin-bottom: 1.5rem;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.fc .fc-button {
+  background: transparent;
+  border: var(--border-light);
+  color: var(--text-light);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.fc .fc-button:hover {
+  background: #f1f5f9;
+  color: var(--primary-dark);
+  border-color: #cbd5e1;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background: var(--primary-light);
+  color: var(--primary-color);
+  border-color: var(--primary-light);
+}
+
+.fc .fc-button-primary:focus {
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+.fc-daygrid-day-top {
+  justify-content: center;
+  padding-top: 4px;
+}
+
+.fc-daygrid-day-number {
+  color: var(--text-light);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  padding: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.fc-day-today .fc-daygrid-day-number {
+  color: var(--primary-color);
+  background: var(--primary-light);
+}
+
+.fc-col-header-cell-cushion {
+  color: var(--text-light);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fc-event {
+  border-radius: 6px;
+  padding: 2px 4px;
+  font-size: 0.75rem;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.fc-event:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fc .fc-view-harness {
+  flex: 1;
+  min-height: 600px;
+}
+
+.fc .fc-daygrid-body {
+  min-height: 20px;
+}
+
+.fc .fc-daygrid-day-frame {
+  min-height: 120px;
+  height: 100%;
+}
+
+.fc .fc-scroller-liquid-absolute {
+  overflow: hidden !important;
+}
+
+/* Dark mode styles for FullCalendar */
+.dark .fc {
+  --fc-border-color: #374151;
+  --fc-daygrid-day-bg-color: #1f2937;
+  --fc-neutral-bg-color: #111827;
+  --fc-page-bg-color: #1f2937;
+  --fc-today-bg-color: #374151;
+}
+
+.dark .fc .fc-button {
+  color: #9ca3af;
+  border-color: #374151;
+}
+
+.dark .fc .fc-button:hover {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+.dark .fc .fc-button-primary:not(:disabled).fc-button-active {
+  background: #4f46e5;
+  color: #ffffff;
+  border-color: #4f46e5;
+}
+
+.dark .fc-daygrid-day-number {
+  color: #9ca3af;
+}
+
+.dark .fc-day-today .fc-daygrid-day-number {
+  color: #ffffff;
+  background: #4f46e5;
+}
+
+.dark .fc-col-header-cell-cushion {
+  color: #9ca3af;
+}
+
+/* Google Places Autocomplete z-index fix */
+.pac-container {
+  z-index: 99999 !important;
+  position: absolute !important;
+}
+</style>
+
+<div class="events-calendar grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 p-6 max-w-[1400px] mx-auto">
+  <!-- Alert Component -->
+  <div id="custom-alert" class="hidden fixed top-4 right-4 w-full max-w-md z-[9999]">
+    <div id="alert-border-2" class="flex items-center p-4 text-red-800 border-t-4 border-red-300 bg-red-50 dark:text-red-400 dark:bg-gray-800 dark:border-red-800" role="alert">
+      <svg class="shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+      </svg>
+      <div class="ms-3 text-sm font-medium">
+        You cannot create events for past dates. Please select today or a future date.
+      </div>
+      <button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-red-50 text-red-500 rounded-lg focus:ring-2 focus:ring-red-400 p-1.5 hover:bg-red-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700" onclick="dismissAlert()" aria-label="Close">
+        <span class="sr-only">Dismiss</span>
+        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+ 
+  <!-- Calendar Container -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{% trans "Calendar" %}</h1>
+    </div>
+    
+    <div id="calendar" class="min-h-[700px]"></div>
+  </div>
+
+  <!-- Upcoming Events Sidebar -->
+  <div class="bg-gray-50 dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 h-fit">
+    <h2 class="text-xl text-gray-900 dark:text-white mb-5 pb-3 border-b border-gray-200 dark:border-gray-700 font-semibold">Upcoming Events</h2>
+
+    <div class="flex flex-col gap-3">
+      {% for event in events %}
+      <div class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-600">
+        <div class="mb-2">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">{{ event.title }}</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <i class="fas fa-users mr-1"></i> {{ event.club.name }}
+          </p>
+        </div>
+        <p class="text-sm text-gray-600 dark:text-gray-300">
+          <i class="far fa-calendar-alt mr-1"></i> {{ event.event_date|date:"F d, Y" }}
+        </p>
+    
+        <div class="mt-3 flex flex-col gap-2">
+          <form action="{% url 'club_member:remind_me' event.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit"
+                    class="w-full text-sm px-4 py-2 rounded-lg font-medium transition-colors duration-200 {% if event.id in reminded_event_ids %}bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300 cursor-not-allowed{% else %}bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600{% endif %}"
+                    {% if event.id in reminded_event_ids %}disabled{% endif %}>
+              <i class="far fa-bell mr-1"></i>
+              {% if event.id in reminded_event_ids %}
+                Reminder Set
+              {% else %}
+                Remind Me
+              {% endif %}
+            </button>
+          </form>
+          
+          <a href="{% url 'club_member:event_detail' event.id %}" 
+             class="btn btn-secondary w-full text-center text-sm">
+            <i class="far fa-eye mr-1"></i> View & Attend
+          </a>
+        </div>
+      </div>
+      {% endfor %}    
+    </div>
+
+    <div class="text-center mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <a href="{% url 'club_member:view_events' %}" 
+         class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium hover:underline">
+        View All Events <i class="fas fa-chevron-right"></i>
+      </a>      
+    </div>
+  </div>
+</div>
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&libraries=places&language=en&v=weekly"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const calendarEl = document.getElementById("calendar");
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: "dayGridMonth",
+      height: "auto",
+      headerToolbar: {
+        left: "prev,next today",
+        center: "title",
+        right: "dayGridMonth,timeGridWeek,timeGridDay"
+      },
+      locale: "en",
+      selectable: false,
+      editable: false,
+      events: "{% url 'activity_center_admin:get_all_approved_events' %}",
+      eventColor: "var(--primary-color)",
+      eventTextColor: "#fff",
+     eventDidMount: function(info) {
+  const props = info.event.extendedProps;
+
+  // 🔷 ACA event: no club_name field
+  if (!props.club_name) {
+    info.el.style.backgroundColor = "#3b82f6";  // Blue
+    info.el.style.borderColor = "#3b82f6";
+    info.el.setAttribute("title", `ACA Event: ${info.event.title}`);
+    return;  // ✅ No further styling needed
+  }
+
+
+    // Style only approved events (others shouldn't be included)
+    info.el.style.backgroundColor = 'var(--success-color)';
+    info.el.style.borderColor = 'var(--success-color)';
+
+    // Subtle hover effect
+    info.el.style.transition = 'all 0.2s ease';
+    info.el.addEventListener('mouseenter', () => {
+        info.el.style.transform = 'translateY(-2px)';
+        info.el.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+    });
+    info.el.addEventListener('mouseleave', () => {
+        info.el.style.transform = '';
+        info.el.style.boxShadow = '';
+    });
+},
+
+dateClick: function(info) {
+  return false;
+},
+      views: {
+        timeGridWeek: {
+          allDaySlot: false,
+          slotMinTime: "00:00:00",
+          slotMaxTime: "24:00:00",
+          dayHeaderFormat: { weekday: "short", day: "numeric" },
+          slotLabelFormat: {
+            hour: "numeric",
+            minute: "2-digit",
+            meridiem: "short"
+          }
+        },
+        timeGridDay: {
+          allDaySlot: false
+        }
+      }
+    });
+
+    calendar.render();
+  });
+</script>
+
+{% endblock %}

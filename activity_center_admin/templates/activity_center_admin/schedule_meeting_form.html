@@ -1,0 +1,51 @@
+{% extends "navbar.html" %}
+{% load static i18n %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow border border-gray-200">
+    <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">📅 {% trans "Schedule a Meeting" %}</h2>
+
+    <!-- Event Details -->
+    <div class="mb-6 text-gray-700 space-y-1">
+        <p><strong>{% trans "Event Title" %}:</strong> {{ activity.title }}</p>
+        <p><strong>{% trans "Requested Event Date" %}:</strong> {{ activity.event_date }}</p>
+        <p><strong>{% trans "Club" %}:</strong> {{ activity.club.name }}</p>
+        <p><strong>{% trans "Participants" %}:</strong> {{ activity.participants }}</p>
+        <p><strong>{% trans "Needs" %}:</strong> {{ activity.needs|default:_("None") }}</p>
+        <p><strong>{% trans "Total Cost" %}:</strong> {{ activity.total_cost|default:"-" }}</p>
+        <p><strong>{% trans "Transportation" %}:</strong> {{ activity.transportation_request|yesno:_("Yes,No") }}</p>
+        {% if activity.supporting_documents %}
+        <p><strong>{% trans "Documents" %}:</strong> <a href="{{ activity.supporting_documents.url }}" target="_blank" class="text-indigo-600 hover:underline">{% trans "View File" %}</a></p>
+        {% endif %}
+    </div>
+
+    <!-- Schedule Form -->
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div>
+            <label for="date_time" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Meeting Date & Time" %}</label>
+            <input type="datetime-local" name="date_time" id="date_time" required
+                   class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <div>
+            <label for="agenda" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Meeting Agenda" %}</label>
+            <textarea name="agenda" id="agenda" rows="4" required
+                      class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="{% trans 'Describe the key topics for the meeting...' %}"></textarea>
+        </div>
+
+        <div class="flex justify-between">
+            <a href="{% url 'activity_center_admin:event_list' %}"
+               class="inline-block px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">
+                ← {% trans "Cancel" %}
+            </a>
+            <button type="submit"
+                    class="inline-block px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700">
+                ✅ {% trans "Schedule & Notify" %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

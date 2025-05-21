@@ -1,0 +1,183 @@
+{% extends "account/base_entrance.html" %}
+{% load allauth i18n socialaccount static %}
+{% load static tailwind_tags %}
+
+{% block extra_head %}
+{% tailwind_css %}
+    <style>
+        body {
+            background: url('{% static "background.png" %}') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .alert-message {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .form-container {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+            border-radius: 1.5rem;
+        }
+        .input-field {
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .signup-btn {
+            background: linear-gradient(135deg, #6b96f2 0%, #002147 100%);
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3), 0 2px 4px -1px rgba(99, 102, 241, 0.1);
+        }
+        .signup-btn:hover {
+            background: linear-gradient(135deg, #5c8df5 0%, #002147 100%);
+            transform: translateY(-1px);
+        }
+    </style>
+{% endblock %}
+
+{% block head_title %}
+    {% trans "Sign Up" %}
+{% endblock head_title %}
+
+{% block content %}
+    <div class="form-container w-full max-w-md p-8">
+        <!-- Logo/Title -->
+        <div class="text-center mb-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+            </svg>
+            <h1 class="text-3xl font-bold text-gray-800 mt-4">Sign Up</h1>
+            <p class="text-gray-500 mt-2">
+                {% trans "Already have an account?" %} <a href="{% url 'account_login' %}" class="text-blue-600 font-medium hover:underline">{% trans "Sign in" %}</a>
+            </p>
+        </div>
+
+        <!-- Non-field Errors -->
+        {% if form.non_field_errors %}
+        <div id="form-error" class="alert-message transform translate-x-full opacity-0 mb-6 p-4 rounded-lg text-white bg-gradient-to-r from-red-400 to-red-500 shadow-md">
+            {% for error in form.non_field_errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Sign Up Form -->
+        {% url 'account_signup' as action_url %}
+        <form method="post" action="{{ action_url }}" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Student ID Field -->
+            <div>
+                <label for="id_student_id" class="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    <input type="text" name="student_id" id="id_student_id" placeholder="Enter your student ID"
+                        class="input-field pl-10 w-full px-4 py-3 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100">
+                </div>
+                {% if form.student_id.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.student_id.errors|first }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Full Name Field -->
+            <div>
+                <label for="id_name" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Full Name" %}</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    <input type="text" name="name" id="id_name" placeholder="{% trans 'Enter your full name' %}"
+                        class="input-field pl-10 w-full px-4 py-3 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100">
+                </div>
+                {% if form.name.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.name.errors|first }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Email Field -->
+            <div>
+                <label for="id_email" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Email" %}</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                        </svg>
+                    </div>
+                    <input type="email" name="email" id="id_email" placeholder="{% trans 'Enter your email' %}"
+                        class="input-field pl-10 w-full px-4 py-3 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100">
+                </div>
+                {% if form.email.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.email.errors|first }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Password Field -->
+            <div>
+                <label for="id_password1" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Password" %}</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <input type="password" name="password1" id="id_password1" placeholder="{% trans 'Create a password' %}"
+                        class="input-field pl-10 w-full px-4 py-3 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100">
+                </div>
+                {% if form.password1.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.password1.errors|first }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div>
+                <label for="id_password2" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Confirm Password" %}</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <input type="password" name="password2" id="id_password2" placeholder="{% trans 'Confirm your password' %}"
+                        class="input-field pl-10 w-full px-4 py-3 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100">
+                </div>
+                {% if form.password2.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.password2.errors|first }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Sign Up Button -->
+            <button type="submit" class="signup-btn w-full py-3 px-4 border border-transparent rounded-xl text-sm font-medium text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                {% trans "Sign Up" %}
+            </button>
+        </form>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-sm text-gray-500">
+            <p>All students have to register using their student email and password.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const errBox = document.getElementById("form-error");
+            if (errBox) {
+                setTimeout(() => {
+                    errBox.classList.remove("translate-x-full", "opacity-0");
+                    errBox.classList.add("translate-x-0", "opacity-100");
+
+                    setTimeout(() => {
+                        errBox.classList.add("opacity-0", "translate-x-full");
+                        setTimeout(() => errBox.remove(), 500);
+                    }, 3000); // Show for 3 seconds
+                }, 100);
+            }
+        });
+    </script>
+{% endblock content %}

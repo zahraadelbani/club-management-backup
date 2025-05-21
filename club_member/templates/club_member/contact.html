@@ -1,0 +1,83 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+
+
+
+{% block breadcrumbs %}
+<nav class="flex text-sm" aria-label="Breadcrumb">
+  <ol class="inline-flex items-center space-x-1 md:space-x-3">
+    <li class="inline-flex items-center">
+      <span class="text-gray-700 dark:text-gray-300">Club Member</span>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd"
+            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z"
+            clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'club_member:contact' %}" class="ml-1 text-blue-600 hover:underline dark:text-blue-400">
+          Contacts
+        </a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">{% trans "Contact Your Club Leaders" %}</h1>
+
+  {% if leaders %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    {% for item in leaders %}
+    <div
+      class="w-full max-w-sm bg-white border border-gray-200 rounded-xl shadow-md dark:bg-gray-800 dark:border-gray-700 mx-auto">
+     
+
+      <!-- Card Content -->
+      <!-- Card Content -->
+      <div class="flex flex-col items-center p-6">
+        {% if item.leader.profile_picture %}
+        <img class="w-24 h-24 mb-3 rounded-full shadow-lg object-cover" src="{{ item.leader.profile_picture.url }}"
+          alt="{{ item.leader.name }}">
+        {% else %}
+        <img class="w-24 h-24 mb-3 rounded-full shadow-lg" src="{% static 'default-profile.jpg' %}"
+          alt="Default Profile">
+        {% endif %}
+
+        <h5 class="mb-1 text-xl font-semibold text-gray-900 dark:text-white">{{ item.leader.name }}</h5>
+        <span class="text-sm text-gray-500 dark:text-gray-400">{{ item.club.name }}</span>
+
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+          📧 <a href="mailto:{{ item.leader.email }}" class="text-blue-600 hover:underline">{{ item.leader.email }}</a>
+        </p>
+
+        <div class="flex mt-4 space-x-2">
+            <a href="{% url 'messaging:rooms' %}"
+              onclick="event.preventDefault(); 
+                        localStorage.setItem('openChatUserId', '{{ item.leader.id }}'); 
+                        localStorage.setItem('openChatUserName', '{{ item.leader.name }}'); 
+                        window.location.href = this.href;"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+              {% trans "Send Direct Message" %}
+            </a>
+
+
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center text-gray-500 text-lg">
+    {% trans "You are not a member of any clubs yet." %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<h2>{% trans "Your Messages" %}</h2>
+
+<h3>{% trans "Received Messages" %}</h3>
+<ul>
+    {% for message in received_messages %}
+        <li><strong>{% trans "From:" %}</strong> {{ message.sender.name }} <br> <strong>{% trans "Message:" %}</strong> {{ message.content }}</li>
+    {% empty %}
+        <li>{% trans "No received messages." %}</li>
+    {% endfor %}
+</ul>
+
+<h3>{% trans "Sent Messages" %}</h3>
+<ul>
+    {% for message in sent_messages %}
+        <li><strong>{% trans "To:" %}</strong> {{ message.receiver.name }} <br> <strong>{% trans "Message:" %}</strong> {{ message.content }}</li>
+    {% empty %}
+        <li>{% trans "No sent messages." %}</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'club_member:dashboard' %}">{% trans "Back to Dashboard" %}</a>
+{% endblock %}

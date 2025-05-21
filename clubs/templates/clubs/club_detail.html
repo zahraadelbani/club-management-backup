@@ -1,0 +1,15 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+{% block content %}
+<div class="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-xl">
+  <h1 class="text-3xl font-bold mb-4">{{ club.name }}</h1>
+  <p class="mb-4 text-gray-700">{{ club.description }}</p>
+
+  <p class="mb-2"><strong>{% trans "Quota:" %}</strong> {{ club.get_member_count }}/{{ club.quota }}</p>
+  <p class="mb-2"><strong>{% trans "Created At:" %}</strong> {{ club.created_at|date:"F j, Y" }}</p>
+
+  <a href="{% url 'users:udashboard' %}" class="mt-6 inline-block text-blue-600 hover:underline">
+    ← {% trans "Back to Dashboard" %}
+  </a>
+</div>
+{% endblock %}

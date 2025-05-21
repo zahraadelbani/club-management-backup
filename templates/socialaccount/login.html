@@ -1,0 +1,65 @@
+{% extends "socialaccount/base_entrance.html" %}
+{% load i18n %}
+{% load allauth %}
+{% load static tailwind_tags %}
+{% block head_title %}
+    {% trans "Sign In" %}
+{% endblock head_title %}
+{% block extra_head %}
+{% tailwind_css %} 
+    <style>
+       body {
+            background: url('{% static "background.png" %}') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .form-container {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+            border-radius: 1.5rem;
+        }
+        .signin-btn {
+            background: linear-gradient(135deg, #6b96f2 0%, #002147 100%);
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3), 0 2px 4px -1px rgba(99, 102, 241, 0.1);
+        }
+        .signin-btn:hover {
+            background: linear-gradient(135deg, #5c8df5 0%, #002147 100%);
+            transform: translateY(-1px);
+        }
+    </style>
+{% endblock %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center sm:px-6 lg:px-8">
+    <div class="form-container max-w-md w-full space-y-8 p-8">
+        {% if process == "connect" %}
+            <div class="text-center">
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+                    {% blocktrans with provider.name as provider %}Connect {{ provider }}{% endblocktrans %}
+                </h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    {% blocktrans with provider.name as provider %}You are about to connect a new third-party account from {{ provider }}.{% endblocktrans %}
+                </p>
+            </div>
+        {% else %}
+            <div class="text-center">
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+                    {% blocktrans with provider.name as provider %}Sign in with {{ provider }}{% endblocktrans %}
+                </h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    {% blocktrans with provider.name as provider %}You are about to sign in using a third-party account from {{ provider }}.{% endblocktrans %}
+                </p>
+            </div>
+        {% endif %}
+        
+        {% element form method="post" no_visible_fields=True %}
+            {% slot actions %}
+                {% csrf_token %}
+                <div class="mt-8">
+                    <button type="submit" class="signin-btn w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        {% trans "Continue" %}
+                    </button>
+                </div>
+            {% endslot %}
+        {% endelement %}
+    </div>
+</div>
+{% endblock content %}

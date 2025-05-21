@@ -1,0 +1,5 @@
+{
+  "model": "mistral",
+  "prompt": "What is the club application process?",
+  "stream": false
+}

@@ -1,0 +1,134 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+
+{% block content %}
+
+{% block breadcrumbs %}
+<nav class="flex text-sm" aria-label="Breadcrumb">
+  <ol class="inline-flex items-center space-x-1 md:space-x-3">
+    <li class="inline-flex items-center">
+      <span class="text-gray-700 dark:text-gray-300">Club Member</span>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <a href="{% url 'club_member:view_events' %}" class="ml-1 text-blue-600 hover:underline dark:text-blue-400">
+          Events
+        </a>
+      </div>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-1 text-blue-600 dark:text-blue-400">{{ event.title }}</span>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+<div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-200 dark:border-gray-700">
+  <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">{{ event.title }}</h2>
+
+  {% if event.image %}
+    <img src="{{ event.image.url }}" alt="Event Image" class="rounded-lg mb-4 max-h-64 w-full object-cover">
+  {% endif %}
+
+  <div class="space-y-4">
+    <div class="flex items-start space-x-2">
+      <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center">
+        <i class="fas fa-users text-gray-500 dark:text-gray-400"></i>
+      </div>
+      <div>
+        <p class="text-gray-700 dark:text-gray-300">
+          <span class="font-medium text-gray-900 dark:text-white">Club:</span> {{ event.club.name|default:"EMU" }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-start space-x-2">
+      <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center">
+        <i class="far fa-calendar-alt text-gray-500 dark:text-gray-400"></i>
+      </div>
+      <div>
+        <p class="text-gray-700 dark:text-gray-300">
+          <span class="font-medium text-gray-900 dark:text-white">Date:</span> {{ event.event_date|date:"F d, Y – H:i" }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-start space-x-2">
+      <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center">
+        <i class="fas fa-map-marker-alt text-gray-500 dark:text-gray-400"></i>
+      </div>
+      <div>
+        <p class="text-gray-700 dark:text-gray-300">
+          <span class="font-medium text-gray-900 dark:text-white">Location:</span> 
+          {{ event.location_name }}
+          {% if event.latitude and event.longitude %}
+            –
+            <a href="https://www.google.com/maps/search/?api=1&query={{ event.latitude }},{{ event.longitude }}" 
+               target="_blank" 
+               class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline">
+              View on Map
+            </a>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-start space-x-2">
+      <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center">
+        <i class="fas fa-bus text-gray-500 dark:text-gray-400"></i>
+      </div>
+      <div>
+        <p class="text-gray-700 dark:text-gray-300">
+          <span class="font-medium text-gray-900 dark:text-white">Transportation:</span> 
+          {% if event.transportation_request %}
+            Available
+          {% else %}
+            Not Available
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    {% if not attendance_record or not attendance_record.is_attending %}
+      <div class="bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 p-4 mb-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-yellow-700 dark:text-yellow-200">
+              {% trans "You have not confirmed your attendance for this event." %}
+            </p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="mt-6 flex justify-center">
+      <form method="post" class="inline">
+        {% csrf_token %}
+        {% if attendance_record and attendance_record.is_attending %}
+          <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+            <i class="fas fa-times mr-2"></i>
+            {% trans "I will not attend" %}
+          </button>
+        {% else %}
+          <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <i class="fas fa-check mr-2"></i>
+            {% trans "I will attend" %}
+          </button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

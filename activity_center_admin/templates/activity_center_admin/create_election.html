@@ -1,0 +1,310 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+{% block breadcrumbs %}
+<nav class="flex text-sm" aria-label="Breadcrumb">
+  <ol class="inline-flex items-center space-x-1 md:space-x-3">
+    <li class="inline-flex items-center">
+      <span class="text-gray-700 dark:text-gray-300">Admin</span>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <a href="{% url 'activity_center_admin:manage_elections' %}" class="ml-1 text-blue-600 hover:underline dark:text-blue-400">
+          Elections
+        </a>
+      </div>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-1 text-blue-600 dark:text-blue-400">
+          Create Election
+        </span>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+<style>
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #3730a3;
+}
+
+.btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px #e0e7ff;
+}
+
+.btn-secondary {
+  background-color: white;
+  color: #334155;
+  border: 1px solid #000000;
+}
+
+.btn-secondary:hover {
+  background-color: #f8fafc;
+}
+
+.btn-secondary:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px #e0e7ff;
+}
+
+.dark .btn-secondary {
+  background-color: #1f2937;
+  color: #e5e7eb;
+  border-color: #4b5563;
+}
+
+.dark .btn-secondary:hover {
+  background-color: #374151;
+}
+
+/* Flatpickr Dark Mode Styles */
+.dark .flatpickr-calendar {
+  background: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.dark .flatpickr-months {
+  background: #1f2937;
+  border-bottom: 1px solid #374151;
+}
+
+.dark .flatpickr-month {
+  color: #e5e7eb;
+}
+
+.dark .flatpickr-current-month {
+  color: #e5e7eb;
+}
+
+.dark .flatpickr-weekday {
+  color: #9ca3af;
+}
+
+.dark .flatpickr-day {
+  color: #e5e7eb;
+}
+
+.dark .flatpickr-day:hover {
+  background: #374151;
+}
+
+.dark .flatpickr-day.selected {
+  background: #4f46e5;
+  border-color: #4f46e5;
+}
+
+.dark .flatpickr-day.today {
+  border-color: #4f46e5;
+}
+
+.dark .flatpickr-day.disabled {
+  color: #6b7280;
+}
+
+.dark .flatpickr-time {
+  border-top: 1px solid #374151;
+}
+
+.dark .flatpickr-time input {
+  color: #e5e7eb;
+}
+
+.dark .flatpickr-time input:hover {
+  background: #374151;
+}
+
+.dark .flatpickr-time input:focus {
+  background: #374151;
+}
+
+.dark .flatpickr-time .flatpickr-am-pm {
+  color: #e5e7eb;
+}
+
+.dark .flatpickr-time .flatpickr-am-pm:hover {
+  background: #374151;
+}
+
+.dark .flatpickr-time .flatpickr-am-pm.selected {
+  background: #4f46e5;
+  color: white;
+}
+
+.dark .flatpickr-time .flatpickr-am-pm.selected:hover {
+  background: #4338ca;
+}
+</style>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="bg-white dark:bg-gray-800 rounded-[14px] shadow-[0_10px_25px_rgba(0,0,0,0.1)] overflow-hidden">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+      <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Create New Election</h3>
+    </div>
+    
+    <div class="p-6">
+      <!-- Warning Notice -->
+      <div class="mb-6">
+        <div class="bg-yellow-50 dark:bg-yellow-900 border-l-4 border-yellow-400 dark:border-yellow-500 p-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-yellow-400 dark:text-yellow-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm text-yellow-700 dark:text-yellow-300">
+                Please ensure all dates are set correctly. The nomination period must end before the voting period begins.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <form method="POST" class="space-y-6">
+        {% csrf_token %}
+        
+        {% for field in form %}
+          <div class="space-y-2">
+            <label for="{{ field.id_for_label }}" 
+                   class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              {{ field.label }}
+              {% if field.field.required %}
+                <span class="text-red-500">*</span>
+              {% endif %}
+            </label>
+            
+            {% if field.name == 'start_date' or field.name == 'end_date' or field.name == 'nomination_start' or field.name == 'nomination_end' %}
+              <input type="text"
+                     name="{{ field.name }}"
+                     id="{{ field.id_for_label }}"
+                     class="w-full px-4 py-3 text-[0.9375rem] text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
+                     placeholder="Select date and time"
+                     {% if field.field.required %}required{% endif %}>
+            {% elif field.field.widget.input_type == 'text' %}
+              <input type="{{ field.field.widget.input_type }}"
+                     name="{{ field.name }}"
+                     id="{{ field.id_for_label }}"
+                     class="w-full px-4 py-3 text-[0.9375rem] text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
+                     placeholder="{{ field.field.widget.attrs.placeholder|default:'' }}"
+                     {% if field.field.required %}required{% endif %}>
+            {% else %}
+              {{ field }}
+            {% endif %}
+
+            {% if field.errors %}
+              <div class="text-sm text-red-500 dark:text-red-400 mt-1">
+                {{ field.errors }}
+              </div>
+            {% endif %}
+
+            {% if field.help_text %}
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {{ field.help_text }}
+              </p>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <div class="pt-4 mt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
+          <a href="{% url 'activity_center_admin:manage_elections' %}" class="btn btn-secondary">
+            Cancel
+          </a>
+          <button type="submit" class="btn btn-primary">
+            Create Election
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Flatpickr Script -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const dateConfig = {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      altInput: true,
+      altFormat: "F j, Y - h:i K",
+      time_24hr: false,
+      minuteIncrement: 1,
+      theme: "dark",
+      onReady: function(selectedDates, dateStr, instance) {
+        // Add dark mode class to the calendar if dark mode is active
+        if (document.documentElement.classList.contains('dark')) {
+          instance.calendarContainer.classList.add('dark');
+        }
+      }
+    };
+
+    // Initialize Flatpickr instances
+    const datePickers = [
+      "input[name='start_date']",
+      "input[name='end_date']",
+      "input[name='nomination_start']",
+      "input[name='nomination_end']"
+    ];
+
+    datePickers.forEach(selector => {
+      flatpickr(selector, dateConfig);
+    });
+
+    // Watch for dark mode changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          const isDark = document.documentElement.classList.contains('dark');
+          document.querySelectorAll('.flatpickr-calendar').forEach(calendar => {
+            if (isDark) {
+              calendar.classList.add('dark');
+            } else {
+              calendar.classList.remove('dark');
+            }
+          });
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  });
+</script>
+
+<!-- Add Flowbite JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+{% endblock %}

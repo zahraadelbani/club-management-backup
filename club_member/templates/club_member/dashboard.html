@@ -1,0 +1,294 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<nav class="flex text-sm" aria-label="Breadcrumb">
+  <ol class="inline-flex items-center space-x-1 md:space-x-3">
+    <li class="inline-flex items-center">
+      <span class="text-gray-700 dark:text-gray-300">{% trans "Club Member" %}</span>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <a href="{% url 'club_member:dashboard' %}" class="ml-1 text-blue-600 hover:underline dark:text-blue-400">
+          {% trans "Dashboard" %}
+        </a>
+      </div>
+    </li>
+  </ol>
+</nav>
+
+<div class="dashboard-content mt-4">
+  <div class="dash-middle">
+    <div class="middle-top">
+      <main>
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <!-- Available Clubs -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-md p-6 transition-colors">
+            <div class="flex items-center space-x-4">
+              <div class="bg-emerald-600 text-white rounded-xl p-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-gray-500 dark:text-gray-400 font-medium">{% trans "Available Clubs" %}</p>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ available_clubs|length }}</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Joined Clubs -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-md p-6 transition-colors">
+            <div class="flex items-center space-x-4">
+              <div class="bg-blue-600 text-white rounded-xl p-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-gray-500 dark:text-gray-400 font-medium">{% trans "Joined Clubs" %}</p>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ member_clubs|length }}</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Upcoming Events -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-md p-6 transition-colors">
+            <div class="flex items-center space-x-4">
+              <div class="bg-purple-600 text-white rounded-xl p-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-gray-500 dark:text-gray-400 font-medium">{% trans "Upcoming Events" %}</p>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ upcoming_events|length }}</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pending Requests -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-md p-6 transition-colors">
+            <div class="flex items-center space-x-4">
+              <div class="bg-rose-600 text-white rounded-xl p-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-gray-500 dark:text-gray-400 font-medium">{% trans "Pending Requests" %}</p>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ termination_requests|length }}</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOLDER-STYLE TABS CONTAINER -->
+        <div class="relative mt-6">
+          <!-- FOLDER TABS -->
+          <div class="flex">
+            <button class="relative px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 z-10" id="available-clubs-tab" data-tabs-target="#available-clubs" type="button" role="tab" aria-controls="available-clubs" aria-selected="true">
+              <span>{% trans "Available Clubs" %}</span>
+            </button>
+
+            <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" id="your-clubs-tab" data-tabs-target="#your-clubs" type="button" role="tab" aria-controls="your-clubs" aria-selected="false">
+              <span>{% trans "Your Clubs" %}</span>
+            </button>
+
+            <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" id="requests-tab" data-tabs-target="#requests" type="button" role="tab" aria-controls="requests" aria-selected="false">
+              <span>{% trans "Termination Requests" %}</span>
+            </button>
+          </div>
+
+          <!-- FOLDER CONTENT AREA -->
+          <div class="relative bg-white dark:bg-gray-800 rounded-b-lg rounded-tr-lg shadow-md overflow-hidden">
+            <!-- Available Clubs -->
+            <div class="p-6" id="available-clubs" role="tabpanel" aria-labelledby="available-clubs-tab">
+              {% if available_clubs %}
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for club in available_clubs %}
+                <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                  <div class="p-6">
+                    <h5 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ club.name }}</h5>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">{{ club.get_member_count }}/{{ club.quota }} {% trans "members" %}</p>
+                    <form method="post" action="{% url 'club_member:join_club' %}" class="mt-4">
+                      {% csrf_token %}
+                      <input type="hidden" name="club_id" value="{{ club.id }}">
+                      <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium py-2 px-4 rounded-lg transition">
+                        {% trans "Join Club" %}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <p class="text-sm text-gray-500 dark:text-gray-400">{% trans "All clubs are full or you are already in 3 clubs." %}</p>
+              {% endif %}
+            </div>
+
+            <!-- Your Clubs -->
+            <div class="hidden p-6 opacity-0" id="your-clubs" role="tabpanel" aria-labelledby="your-clubs-tab">
+              {% if member_clubs %}
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for club in member_clubs %}
+                <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                  <div class="p-6">
+                    <h5 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ club.name }}</h5>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">{% trans "Member since" %} {{ club.joined_date|date:"F d, Y" }}</p>
+                    <div class="flex justify-between items-center mt-4">
+                      <a href="{% url 'club_member:leave_club' club.id %}" 
+                      class="inline-flex items-center px-3 py-1 text-sm font-medium text-red-800 bg-red-100 rounded-full dark:bg-red-900 dark:text-red-300 transition-all duration-200 ease-in-out hover:bg-red-200 dark:hover:bg-red-800 hover:text-red-900 dark:hover:text-red-100"
+
+                      >
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        {% trans "Request to Leave Club" %}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <p class="text-sm text-gray-500 dark:text-gray-400">{% trans "You have not joined any clubs yet." %}</p>
+              {% endif %}
+            </div>
+
+
+            <!-- Termination Requests -->
+            <div class="hidden p-6 opacity-0" id="requests" role="tabpanel" aria-labelledby="requests-tab">
+              {% if termination_requests %}
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead class="bg-gray-100 dark:bg-gray-700">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{% trans "Club" %}</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{% trans "Request Date" %}</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{% trans "Status" %}</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{% trans "Action" %}</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                    {% for request in termination_requests %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">{{ request.club.name }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">  {{ request.created_at|date:"M d, Y" }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="px-2 py-1 text-xs rounded-full 
+                          {% if request.status == 'pending' %}bg-yellow-100 text-yellow-800
+                          {% elif request.status == 'approved' %}bg-green-100 text-green-800
+                          {% else %}bg-red-100 text-red-800{% endif %}">
+                          {{ request.get_status_display }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        {% if request.status == "pending" %}
+                        <a href="{% url 'club_member:cancel_termination_request' request.id %}" 
+                        class="inline-flex items-center px-3 py-1 text-sm font-medium text-red-800 bg-red-100 rounded-full dark:bg-red-900 dark:text-red-300 transition-all duration-200 ease-in-out hover:bg-red-200 dark:hover:bg-red-800 hover:text-red-900 dark:hover:text-red-100"
+
+                        >
+                         
+                          {% trans "Cancel" %}
+                        </a>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <p class="text-sm text-gray-500 dark:text-gray-400">{% trans "No pending termination requests." %}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get the tab from URL parameter or localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab') || localStorage.getItem('activeTab') || 'available-clubs';
+
+    // Function to activate a tab
+    function activateTab(tabId) {
+      // Update all tabs to inactive state
+      document.querySelectorAll('[role="tab"]').forEach(t => {
+        t.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'z-10');
+        t.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300', 'z-0');
+        t.setAttribute('aria-selected', 'false');
+      });
+
+      // Hide all tab panels
+      document.querySelectorAll('[role="tabpanel"]').forEach(panel => {
+        panel.classList.add('hidden', 'opacity-0');
+      });
+
+      // Activate the selected tab
+      const tab = document.querySelector(`[data-tabs-target="#${tabId}"]`);
+      const panel = document.getElementById(tabId);
+
+      if (tab && panel) {
+        tab.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300', 'z-0');
+        tab.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'z-10');
+        tab.setAttribute('aria-selected', 'true');
+
+        panel.classList.remove('hidden');
+        setTimeout(() => {
+          panel.classList.remove('opacity-0');
+        }, 10);
+      }
+
+      // Store the active tab in localStorage
+      localStorage.setItem('activeTab', tabId);
+
+      // Update URL without reloading the page
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tabId);
+      window.history.replaceState({}, '', url);
+    }
+
+    // Check if this is the first visit to the dashboard
+    const isFirstVisit = !localStorage.getItem('hasVisitedDashboard');
+    
+    if (isFirstVisit) {
+      // If it's the first visit, activate the first tab and mark as visited
+      const firstTab = document.querySelector('[role="tab"]');
+      if (firstTab) {
+        const firstTabId = firstTab.dataset.tabsTarget.replace('#', '');
+        activateTab(firstTabId);
+        localStorage.setItem('hasVisitedDashboard', 'true');
+      }
+    } else {
+      // For subsequent visits, use the stored tab or default
+      activateTab(activeTab);
+    }
+
+    // Add click handlers for tabs
+    document.querySelectorAll('[role="tab"]').forEach(tab => {
+      tab.addEventListener('click', function(e) {
+        e.preventDefault();
+        const tabId = this.dataset.tabsTarget.replace('#', '');
+        activateTab(tabId);
+      });
+    });
+
+    // Handle browser back/forward navigation
+    window.addEventListener('popstate', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const activeTab = urlParams.get('tab') || localStorage.getItem('activeTab') || 'available-clubs';
+      activateTab(activeTab);
+    });
+  });
+</script>
+{% endblock %}

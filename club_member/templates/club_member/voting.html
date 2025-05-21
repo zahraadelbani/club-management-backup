@@ -1,0 +1,29 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% trans "Club Leader Voting" %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>{% blocktrans %}Vote for Club Leader in {{ club.name }}{% endblocktrans %}</h1>
+    </header>
+
+    <main>
+        <form method="post">
+            {% csrf_token %}
+            <label for="candidate_id">{% trans "Choose a Candidate:" %}</label>
+            <select name="candidate_id" id="candidate_id" required>
+                {% for candidate in candidates %}
+                    <option value="{{ candidate.id }}">{{ candidate.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">{% trans "Submit Vote" %}</button>
+        </form>
+    </main>
+</body>
+</html>

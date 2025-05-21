@@ -1,0 +1,25 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+{% load static %}
+{% block content %}
+
+<h2>{% trans "Create a Poll" %}</h2>
+
+{% if user.memberships.filter(club=club, membership_type='leader').exists %}
+  <form method="post">
+      {% csrf_token %}
+      {{ poll_form.as_p }}
+
+      <h3>{% blocktrans %}Add {{ num_choices }} Choices{% endblocktrans %}</h3>
+      {% for form in choice_forms %}
+          {{ form.as_p }}
+      {% endfor %}
+
+      <button type="submit">{% trans "Create Poll" %}</button>
+  </form>
+{% else %}
+  <p>{% trans "You must be a club leader to create polls." %}</p>
+{% endif %}
+
+<a href="{% url 'polls:poll_list' %}">{% trans "Back to Polls" %}</a>
+{% endblock content %}

@@ -1,0 +1,491 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% trans "Activity Center Admin Dashboard" %}</title>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900">
+  {% block breadcrumbs %}
+  <nav class="flex text-sm" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+      <li class="inline-flex items-center">
+        <span class="text-gray-700 dark:text-gray-300">Admin</span>
+      </li>
+      <li>
+        <div class="flex items-center">
+          <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+          </svg>
+          <span class="ml-1 text-blue-600 dark:text-blue-400">
+            Dashboard
+          </span>
+        </div>
+      </li>
+    </ol>
+  </nav>
+  {% endblock %}
+
+
+
+  <!-- ANALYTICS SECTION -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 my-6">
+    <!-- Pending Events -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+      <div class="flex items-center space-x-4">
+        <div class="bg-blue-600 text-white rounded-xl p-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-gray-500 dark:text-gray-400 font-medium">{% trans "Pending Club Events" %}</p>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+            {{ pending_events.count }}
+          </h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Announcements -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+      <div class="flex items-center space-x-4">
+        <div class="bg-blue-600 text-white rounded-xl p-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-gray-500 dark:text-gray-400 font-medium">{% trans "Announcements" %}</p>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+            {{ announcements.count }}
+          </h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clubs -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+      <div class="flex items-center space-x-4">
+        <div class="bg-blue-600 text-white rounded-xl p-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-gray-500 dark:text-gray-400 font-medium">{% trans "Clubs" %}</p>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+            {{ clubs.count }}
+          </h3>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOLDER-STYLE TABS CONTAINER -->
+  <div class="relative mt-6">
+    <!-- FOLDER TABS -->
+    <div class="flex">
+      <button class="relative px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 z-10" 
+              id="activities-tab" data-tabs-target="#activities" type="button" role="tab" aria-controls="activities" aria-selected="true">
+        <span>{% trans "Pending Events" %}</span>
+      </button>
+      
+      <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+              id="announcements-tab" data-tabs-target="#announcements" type="button" role="tab" aria-controls="announcements" aria-selected="false">
+        <span>{% trans "Announcements" %}</span>
+      </button>
+
+      <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+              id="clubs-tab" data-tabs-target="#clubs" type="button" role="tab" aria-controls="clubs" aria-selected="false">
+        <span>{% trans "Clubs" %}</span>
+      </button>
+    </div>
+    
+    <!-- FOLDER CONTENT AREA -->
+    <div class="relative bg-white dark:bg-gray-800 rounded-b-lg rounded-tr-lg shadow-md overflow-hidden">
+      <!-- PENDING ACTIVITIES TAB -->
+      <div class="p-6" id="activities" role="tabpanel" aria-labelledby="activities-tab">
+        {% if pending_events %}
+        <div class="mb-4">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+
+            </div>
+           </div>
+        </div>
+
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+          <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" id="activitiesTable">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+              <tr>
+                <th scope="col" class="px-6 py-3">{% trans "Club" %}</th>
+                <th scope="col" class="px-6 py-3">{% trans "Activity" %}</th>
+                <th scope="col" class="px-6 py-3">{% trans "Submitted By" %}</th>
+                <th scope="col" class="px-6 py-3">{% trans "event Date" %}</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+              {% for activity in pending_events|slice:":5" %}
+
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                  {{ activity.club.name }}
+                </td>
+                <td class="px-6 py-4">
+                  {{ activity.title }}
+                </td>
+                <td class="px-6 py-4">
+                  {{ activity.created_by.name }}
+                </td>
+                <td class="px-6 py-4">
+                  {{ activity.event_date|date:"M d, Y H:i" }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-4 text-right">
+          <a href="{% url 'activity_center_admin:event_list' %}" class="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300 transition-all duration-200 ease-in-out">{% trans "View All" %}</a>
+        
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          {% trans "No pending club events." %}
+        </p>
+        {% endif %}
+      </div>
+
+<!-- PENDING ANNOUNCEMENTS TAB -->
+<div class="hidden p-6 opacity-0" id="announcements" role="tabpanel" aria-labelledby="announcements-tab">
+  {% if announcements %}
+    <div class="mb-4">
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+
+    </div>
+   </div>
+</div>
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" id="announcementsTable">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <tr>
+            <th class="px-6 py-3">{% trans "Club" %}</th>
+            <th class="px-6 py-3">{% trans "Title" %}</th>
+            <th class="px-6 py-3">{% trans "Submitted By" %}</th>
+            <th class="px-6 py-3">{% trans "Submitted At" %}</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+          {% for announcement in announcements|slice:":5" %}
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+              {% if announcement.club %}
+                {{ announcement.club.name }}
+              {% else %}
+                {% trans "EMU" %}
+              {% endif %}
+            </td>
+
+            <td class="px-6 py-4">
+              {{ announcement.title }}
+            </td>
+
+            <td class="px-6 py-4">
+              {% if announcement.created_by %}
+                {{ announcement.created_by.name }}
+              {% else %}
+                {% trans "Activity Center Admin" %}
+              {% endif %}
+            </td>
+
+            <td class="px-6 py-4">
+              {{ announcement.created_at|date:"M d, Y H:i" }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 text-right">
+      <a href="{% url 'activity_center_admin:announcement_list' %}" class="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300 transition-all duration-200 ease-in-out">{% trans "View All" %}</a>
+    </div>
+  {% else %}
+    <p class="text-sm text-gray-500 dark:text-gray-400">
+      {% trans "No pending announcements." %}
+    </p>
+  {% endif %}
+</div>
+
+      <!-- CLUBS TAB -->
+      <div class="hidden p-6 opacity-0" id="clubs" role="tabpanel" aria-labelledby="clubs-tab">
+        {% if clubs %}
+        <div class="mb-4">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+
+            </div>
+
+          </div>
+        </div>
+
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+          <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" id="clubsTable">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+              <tr>
+                <th class="px-6 py-3">{% trans "Club Name" %}</th>
+                <th class="px-6 py-3">{% trans "Description" %}</th>
+                <th class="px-6 py-3">{% trans "Created At" %}</th>
+                <th class="px-6 py-3">{% trans "Quota" %}</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+              {% for club in clubs|slice:":5" %}
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ club.name }}</td>
+                <td class="px-6 py-4">{{ club.description|truncatewords:5 }}</td>
+                
+                <td class="px-6 py-4">
+                  
+                    {{ club.created_at|date:"M d, Y H:i" }}
+                  
+                </td>
+                <td class="px-6 py-4">{{ club.quota }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+            <div class="mt-4 text-right">
+              <a href="{% url 'activity_center_admin:club_list' %}" class="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300 transition-all duration-200 ease-in-out">{% trans "View All" %}</a>
+              </div>
+          
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          {% trans "No clubs found." %}
+        </p>
+        {% endif %}
+      </div>
+
+
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get the tab from URL parameter or localStorage
+      const urlParams = new URLSearchParams(window.location.search);
+      const activeTab = urlParams.get('tab') || localStorage.getItem('activeTab') || 'activities';
+
+      // Function to activate a tab
+      function activateTab(tabId) {
+        // Update all tabs to inactive state
+        document.querySelectorAll('[role="tab"]').forEach(t => {
+          t.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'z-10');
+          t.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300', 'z-0');
+          t.setAttribute('aria-selected', 'false');
+        });
+
+        // Hide all tab panels
+        document.querySelectorAll('[role="tabpanel"]').forEach(panel => {
+          panel.classList.add('hidden', 'opacity-0');
+        });
+
+        // Activate the selected tab
+        const tab = document.querySelector(`[data-tabs-target="#${tabId}"]`);
+        const panel = document.getElementById(tabId);
+
+        if (tab && panel) {
+          tab.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300', 'z-0');
+          tab.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'z-10');
+          tab.setAttribute('aria-selected', 'true');
+
+          panel.classList.remove('hidden');
+          setTimeout(() => {
+            panel.classList.remove('opacity-0');
+          }, 10);
+        }
+
+        // Store the active tab in localStorage
+        localStorage.setItem('activeTab', tabId);
+
+        // Update URL without reloading the page
+        const url = new URL(window.location);
+        url.searchParams.set('tab', tabId);
+        window.history.replaceState({}, '', url);
+      }
+
+      // Activate the tab from URL parameter or localStorage on page load
+      activateTab(activeTab);
+
+      // Add click handlers for tabs
+      document.querySelectorAll('[role="tab"]').forEach(tab => {
+        tab.addEventListener('click', function(e) {
+          e.preventDefault();
+          const tabId = this.dataset.tabsTarget.replace('#', '');
+          activateTab(tabId);
+        });
+      });
+
+      // Handle browser back/forward navigation
+      window.addEventListener('popstate', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab') || localStorage.getItem('activeTab') || 'activities';
+        activateTab(activeTab);
+      });
+
+      // Ensure first tab is visible on initial page load
+      const firstTab = document.querySelector('[role="tab"]');
+      if (firstTab) {
+        const firstTabId = firstTab.dataset.tabsTarget.replace('#', '');
+        const firstPanel = document.getElementById(firstTabId);
+        if (firstPanel) {
+          firstPanel.classList.remove('hidden', 'opacity-0');
+        }
+      }
+    });
+  </script>
+
+  <!-- Modal for Event Review -->
+<div id="eventModal" class="fixed z-50 inset-0 flex items-center justify-center hidden bg-black bg-opacity-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-xl w-full shadow-lg relative">
+    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4" id="modalTitle"></h2>
+
+    <div class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+      <p><strong>{% trans "Club:" %}</strong> <span id="modalClub"></span></p>
+      <p><strong>{% trans "Event Date:" %}</strong> <span id="modalDate"></span></p>
+      <p><strong>{% trans "Submitted By:" %}</strong> <span id="modalSubmitter"></span></p>
+      <p><strong>{% trans "Location:" %}</strong> <span id="modalLocation"></span></p>
+      <p><strong>{% trans "Transportation Requested:" %}</strong> <span id="modalTransport"></span></p>
+      <p><strong>{% trans "Total Cost:" %}</strong> <span id="modalCost"></span></p>
+      <p><strong>{% trans "Participants:" %}</strong> <span id="modalParticipants"></span></p>
+      <p class="pt-3"><strong>{% trans "Needs / Description:" %}</strong></p>
+      <p id="modalDescription" class="text-gray-800 dark:text-gray-100"></p>
+      <p id="modalDocs" class="pt-2"></p>
+    </div>
+
+    <div class="mt-6 text-right">
+      <button onclick="closeModal()" class="text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700">{% trans "Close" %}</button>
+    </div>
+  </div>
+</div>
+  <script>
+    function closeModal() {
+      document.getElementById('eventModal').classList.add('hidden');
+    }
+  
+    document.querySelectorAll('.review-btn').forEach(button => {
+      button.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.getElementById('modalTitle').textContent = this.dataset.title;
+        document.getElementById('modalClub').textContent = this.dataset.club;
+        document.getElementById('modalDate').textContent = this.dataset.date;
+        document.getElementById('modalSubmitter').textContent = this.dataset.submitter;
+        document.getElementById('modalLocation').textContent = this.dataset.location;
+        document.getElementById('modalTransport').textContent = this.dataset.transport;
+        document.getElementById('modalCost').textContent = this.dataset.cost;
+        document.getElementById('modalParticipants').textContent = this.dataset.participants;
+        document.getElementById('modalDescription').textContent = this.dataset.needs;
+  
+        const docUrl = this.dataset.doc;
+        if (docUrl) {
+          document.getElementById('modalDocs').innerHTML = `<a href="${docUrl}" target="_blank" class="text-blue-500 underline">{% trans "View Supporting Document" %}</a>`;
+        } else {
+          document.getElementById('modalDocs').innerHTML = '';
+        }
+  
+        document.getElementById('eventModal').classList.remove('hidden');
+      });
+    });
+  </script>
+
+<!-- Modal for Announcement Review -->
+<div id="announcementModal" class="fixed z-50 inset-0 flex items-center justify-center hidden bg-black bg-opacity-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-xl w-full shadow-lg relative">
+    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4" id="announcementModalTitle"></h2>
+    <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+      <p><strong>{% trans "Club:" %}</strong> <span id="announcementModalClub"></span></p>
+      <p><strong>{% trans "Created By:" %}</strong> <span id="announcementModalAuthor"></span></p>
+      <p><strong>{% trans "Created At:" %}</strong> <span id="announcementModalDate"></span></p>
+      <p class="pt-2"><strong>{% trans "Content:" %}</strong></p>
+      <p id="announcementModalContent" class="text-gray-800 dark:text-gray-100 whitespace-pre-wrap"></p>
+    </div>
+    <div class="mt-6 text-right">
+      <button onclick="closeAnnouncementModal()" class="text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700">{% trans "Close" %}</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function closeAnnouncementModal() {
+    document.getElementById('announcementModal').classList.add('hidden');
+  }
+
+  document.querySelectorAll('.review-announcement-btn').forEach(button => {
+    button.addEventListener('click', function (e) {
+      e.preventDefault();
+      document.getElementById('announcementModalTitle').textContent = this.dataset.title;
+      document.getElementById('announcementModalClub').textContent = this.dataset.club;
+      document.getElementById('announcementModalAuthor').textContent = this.dataset.author || '—';
+      document.getElementById('announcementModalDate').textContent = this.dataset.date;
+      document.getElementById('announcementModalContent').textContent = this.dataset.content;
+      document.getElementById('announcementModal').classList.remove('hidden');
+    });
+  });
+</script>
+
+<!-- Modal for club Review -->
+  <div id="clubModal" class="fixed z-50 inset-0 flex items-center justify-center hidden bg-black bg-opacity-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-xl w-full shadow-lg relative">
+    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4" id="clubModalTitle"></h2>
+    <div class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+      <p><strong>{% trans "Leader:" %}</strong> <span id="clubModalLeader"></span></p>
+      <p><strong>{% trans "Members:" %}</strong> <span id="clubModalMembers"></span></p>
+      <p><strong>{% trans "Quota:" %}</strong> <span id="clubModalQuota"></span></p>
+      <p><strong>{% trans "Created At:" %}</strong> <span id="clubModalCreated"></span></p>
+      <p class="pt-2"><strong>{% trans "Description:" %}</strong></p>
+      <p id="clubModalDescription" class="text-gray-800 dark:text-gray-100 whitespace-pre-wrap"></p>
+      <div class="mt-4 space-y-2">
+        <img id="clubModalLogo" class="w-16 h-16 object-cover rounded" alt="Logo">
+        <img id="clubModalBg" class="w-full h-32 object-cover rounded" alt="Background">
+      </div>
+    </div>
+    <div class="mt-6 text-right">
+      <button onclick="closeClubModal()" class="text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700">{% trans "Close" %}</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function closeClubModal() {
+    document.getElementById('clubModal').classList.add('hidden');
+  }
+
+  document.querySelectorAll('.review-club-btn').forEach(button => {
+    button.addEventListener('click', function (e) {
+      e.preventDefault();
+      document.getElementById('clubModalTitle').textContent = this.dataset.name;
+      document.getElementById('clubModalLeader').textContent = this.dataset.leader || '—';
+      document.getElementById('clubModalMembers').textContent = this.dataset.members;
+      document.getElementById('clubModalQuota').textContent = this.dataset.quota;
+      document.getElementById('clubModalCreated').textContent = this.dataset.created;
+      document.getElementById('clubModalDescription').textContent = this.dataset.description;
+
+      document.getElementById('clubModalLogo').src = this.dataset.logo;
+      document.getElementById('clubModalBg').src = this.dataset.background;
+      document.getElementById('clubModal').classList.remove('hidden');
+    });
+  });
+</script>
+
+
+</body>
+</html>
+{% endblock %}

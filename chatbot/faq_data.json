@@ -1,0 +1,21 @@
+{
+  "how do i join a club?": "Visit the dashboard, find clubs you're interested in, and click 'Apply'. Once approved, you’ll gain member access.",
+  "can i join more than one club?": "Yes! You can join up to 3 clubs, but only be a leader of one.",
+  "where can i see upcoming events?": "Go to the Events page in your dashboard. All approved club events will be listed there.",
+  "how do i vote in elections?": "Visit the Voting section during the election period and select your candidates. Each position can only be voted for once.",
+  "how do i give feedback to the club?": "Navigate to the Feedback section in your dashboard and submit your suggestion or complaint. Complaints can be anonymous.",
+  "can i leave a club after joining?": "Yes, you can request to leave a club from your club dashboard under Membership settings.",
+  "how can i contact the club leader?": "Use the one-to-one messaging feature in the Chat Rooms dropdown to reach out to your club leader.",
+  "how do i change the language of the dashboard?": "Use the language selector at the top-right corner to switch languages. It will stay active across all pages.",
+  "how do i manage club members?": "Navigate to the club dashboard and go to the 'Membership Requests' section to approve or reject new members.",
+  "can i schedule events?": "Yes, go to the Events section and fill out the form. Events need approval from the Activity Center Admin.",
+  "how do i respond to club membership applications?": "In the Membership Requests tab of your club dashboard, you can view pending applications and accept or reject them.",
+  "how do i create a poll in the group chat?": "Inside your club's group chat, scroll below the message box to create a poll. Polls appear in real-time.",
+  "can i message club members directly?": "Yes, use the one-to-one messaging feature under the Chat Rooms dropdown. You can only message members of your club.",
+  "how do i upload club-related documents?": "Go to the Club Documents section on your dashboard to upload and manage documents.",
+  "how can i view feedback or complaints from members?": "You can access the Feedback section from your dashboard to view suggestions and anonymous complaints.",
+  "how do i reschedule an event?": "Go to the event details page and submit a reschedule request. It must be approved by the Activity Center Admin.",
+  "can i see who voted in a club election?": "No, votes are encrypted and anonymous. You can only see vote counts after admin verification.",
+  "how do i nominate myself or someone else for elections?": "Visit the Elections page and choose a position to nominate yourself for. All nominations are subject to admin approval.",
+  "can i edit an event after submission?": "You can edit event details only before it's approved. After that, you need to submit a reschedule or update request."
+}

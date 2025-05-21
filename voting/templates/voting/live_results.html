@@ -1,0 +1,118 @@
+{% extends "navbar.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+  <h1 class="text-2xl font-bold mb-6 text-gray-800">Live Results for {{ election.name }}</h1>
+
+  <div id="results-container">
+    {% if results %}
+      {% for group in results %}
+        <div class="bg-white border rounded shadow p-4 mb-6" data-position-id="{{ group.position.id }}">
+          <h2 class="text-lg font-semibold text-indigo-700 mb-2">
+            {{ group.position.name }}{% if group.position.club %} ({{ group.position.club.name }}){% endif %}
+          </h2>
+
+          {% if group.candidates %}
+            <div class="mb-4" style="width:100%; max-width:700px;">
+              <canvas id="voteChart-{{ group.position.id }}" width="700" height="300" style="display:block;"></canvas>
+            </div>
+            <ul class="mt-4 space-y-1 text-sm" id="candidate-list-{{ group.position.id }}">
+              {% for candidate in group.candidates %}
+                <li><strong>{{ candidate.user.name }}</strong> - <span class="vote-count">{{ candidate.votes }}</span> votes</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-gray-500">No candidates for this position.</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-gray-500">No results available.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const charts = {};
+
+  function renderChart(positionId, labels, data) {
+    const ctx = document.getElementById("voteChart-" + positionId)?.getContext("2d");
+    if (!ctx) return;
+
+    if (charts[positionId]) charts[positionId].destroy();
+
+    charts[positionId] = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Votes",
+          data: data,
+          backgroundColor: [
+            "#3498db", "#2ecc71", "#e74c3c", "#f1c40f", "#9b59b6",
+            "#34495e", "#e67e22", "#1abc9c", "#95a5a6", "#ff7675"
+          ],
+          borderColor: "#ddd",
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 } },
+          x: { ticks: { color: "#333" } }
+        },
+        animation: {
+          duration: 1000,
+          easing: 'easeInOutQuad'
+        }
+      }
+    });
+  }
+
+  function updateResults(data) {
+    data.forEach(group => {
+      const positionId = group.position_id;
+      const labels = group.candidates.map(c => c.name);
+      const votes = group.candidates.map(c => c.votes);
+
+      renderChart(positionId, labels, votes);
+
+      const list = document.getElementById("candidate-list-" + positionId);
+      if (list) {
+        list.innerHTML = "";
+        group.candidates.forEach(c => {
+          const li = document.createElement("li");
+          li.innerHTML = `<strong>${c.name}</strong> - <span class="vote-count">${c.votes}</span> votes`;
+          list.appendChild(li);
+        });
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const electionId = {{ election.id }};
+    const socket = new WebSocket(`ws://${window.location.host}/ws/election/${electionId}/`);
+
+    socket.onmessage = function (event) {
+      const message = JSON.parse(event.data);
+      if (message.type === "live_results") {
+        updateResults(message.data);
+      }
+    };
+
+    // Initial render (if needed)
+    {% for group in results %}
+      {% if group.candidates %}
+        renderChart(
+          {{ group.position.id }},
+          [{% for c in group.candidates %}"{{ c.user.name|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+          [{% for c in group.candidates %}{{ c.votes }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        );
+      {% endif %}
+    {% endfor %}
+  });
+</script>
+{% endblock %}

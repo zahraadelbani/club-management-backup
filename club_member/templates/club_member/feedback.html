@@ -1,0 +1,69 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% trans "Submit Feedback" %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>{% trans "Submit Feedback" %}</h1>
+    </header>
+    <main>
+        <!-- Feedback Submission Form -->
+        <form method="post">
+            {% csrf_token %}
+            <label for="club_id">{% trans "Select Club:" %}</label>
+            <select name="club_id" id="club_id" required>
+                {% for club in available_clubs %}
+                    <option value="{{ club.id }}">{{ club.name }}</option>   
+                {% endfor %}
+            </select>
+            
+            <label for="category">Category:</label>
+            <select name="category" id="category" required>
+                <option value="complaint">Complaint (Anonymous)</option>
+                <option value="suggestion">Suggestion (Name will be shown)</option>
+            </select>
+
+            <label for="content">Your Feedback:</label>
+            <textarea name="content" id="content" placeholder="Enter your feedback..." required></textarea>
+            
+            <button type="submit">Submit</button>
+        </form>
+
+        <!-- Submitted Feedback List -->
+        <section style="margin-top: 40px;">
+            <h2>Your Submitted Feedback</h2>
+            {% if feedback_list %}
+                <table border="1" cellpadding="10" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Club</th>
+                            <th>Category</th>
+                            <th>Content</th>
+                            <th>Status</th>
+                            <th>Submitted At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feedback in feedback_list %}
+                            <tr>
+                                <td>{{ feedback.club.name }}</td>
+                                <td>{{ feedback.get_category_display }}</td>
+                                <td>{{ feedback.content }}</td>
+                                <td>{{ feedback.get_status_display }}</td>
+                                <td>{{ feedback.created_at }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>You haven't submitted any feedback yet.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

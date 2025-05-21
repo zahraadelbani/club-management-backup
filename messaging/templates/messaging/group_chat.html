@@ -1,0 +1,497 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+{% block chat_dock_class %}flex{% endblock %}
+
+{% block content %}
+{% block chat_dock %}
+  <div id="chat-dock" class="fixed bottom-0 right-0 flex gap-3 p-3 z-50"></div>
+{% endblock %}
+
+<div class="flex h-screen bg-white dark:bg-gray-900">
+  <!-- Main Chat Container -->
+  <div class="flex-1 flex flex-col pb-20">
+    <!-- Chat Header -->
+    <div class="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-gray-700 flex items-center justify-center">
+          <span class="text-xl text-blue-600 dark:text-white">{{ club.name|first|upper }}</span>
+        </div>
+        <div>
+          <h2 class="text-gray-800 dark:text-white font-semibold">{{ club.name }}</h2>
+          <p class="text-gray-500 dark:text-gray-400 text-sm">{% trans "Group Chat" %}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
+      {% for message in chat_messages %}
+        {% if message.message_type == "poll" %}
+          <!-- Poll Message -->
+          <div class="flex {% if message.sender.id == request.user.id %}justify-end{% else %}space-x-2{% endif %}" data-poll-id="{{ message.poll.id }}">
+            {% if message.sender.id != request.user.id %}
+              <img src="{{ message.sender.profile_picture.url|default:'/static/img/default-avatar.png' }}"
+                   class="w-8 h-8 rounded-full" alt="Avatar">
+            {% endif %}
+            <div class="{% if message.sender.id == request.user.id %}text-right{% else %}text-left{% endif %} max-w-xs">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-1 flex {% if message.sender.id == request.user.id %}justify-end{% else %}justify-start{% endif %} gap-1">
+                {% if message.sender.id == request.user.id %}
+                  <span>📊 Poll</span>
+                {% else %}
+                  <span>{{ message.sender.name }}</span>
+                {% endif %}
+                <span>{{ message.timestamp|date:"H:i" }}</span>
+              </p>
+              <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl {% if message.sender.id == request.user.id %}rounded-tr-none{% else %}rounded-tl-none{% endif %} shadow-lg space-y-3">
+                <strong class="text-gray-800 dark:text-white">{{ message.poll.question }}</strong>
+                <p class="total-votes text-xs text-gray-500 dark:text-gray-400">
+                  {% trans "Total Votes:" %} {{ message.poll.poll_votes.count }}
+                </p>
+                <div class="space-y-3">
+                  {% for choice in message.poll.choices.all %}
+                    <div>
+                      <button class="vote-btn w-full text-left px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg transition-colors duration-200"
+                              data-choice-id="{{ choice.id }}"
+                              data-poll-id="{{ message.poll.id }}"
+                              {% if message.has_voted %}disabled{% endif %}
+                              {% if message.has_voted and choice.id == message.selected_choice_id %}style="background-color: #059669;"{% endif %}>
+                        {{ choice.text }}
+                      </button>
+                      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full mt-2 h-2">
+                        <div data-bar-id="{{ choice.id }}" class="bg-blue-500 h-2 rounded-full" style="width: {{ choice.vote_percent|default:"0"|floatformat:1 }}%;"></div>
+                      </div>
+                      <span data-count-id="{{ choice.id }}" class="text-xs text-gray-500 dark:text-gray-400">{{ choice.vote_count }}</span>
+                    </div>
+                  {% endfor %}
+                </div>
+                <p class="vote-hint text-gray-500 dark:text-gray-400 text-xs italic mt-2">
+                  {% if message.has_voted %}
+                    {% trans "You have already voted." %}
+                  {% else %}
+                    {% trans "Click a choice to vote" %}
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+            {% if message.sender.id == request.user.id %}
+              <img src="{{ message.sender.profile_picture.url|default:'/static/img/default-avatar.png' }}"
+                   class="w-8 h-8 rounded-full" alt="Avatar">
+            {% endif %}
+          </div>
+
+        {% elif message.sender.id == request.user.id %}
+          <!-- Regular Message from Self -->
+          <div class="flex justify-end space-x-2">
+            <div class="text-right max-w-xs">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-1 flex items-center justify-end gap-1">
+                <span>{{ message.timestamp|date:"H:i" }}</span>
+                <span>{{ message.sender.name }}</span>
+              </p>
+              <div class="bg-blue-500 text-white p-3 rounded-xl rounded-tl-none shadow-lg">
+                {{ message.content }}
+              </div>
+            </div>
+            <img src="{{ message.sender.profile_picture.url|default:'/static/img/default-avatar.png' }}"
+                 class="w-8 h-8 rounded-full" alt="Avatar">
+          </div>
+
+        {% else %}
+          <!-- Regular Message from Others -->
+          <div class="flex space-x-2">
+            <img src="{{ message.sender.profile_picture.url|default:'/static/img/default-avatar.png' }}"
+                 class="w-8 h-8 rounded-full" alt="Avatar">
+            <div class="text-left max-w-xs">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
+                <span>{{ message.sender.name }}</span>
+                <span>{{ message.timestamp|date:"H:i" }}</span>
+              </p>
+              <div class="bg-white dark:bg-gray-800 text-gray-800 dark:text-white p-3 rounded-xl rounded-tl-none shadow-lg">
+                {{ message.content }}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      {% empty %}
+        <div class="flex items-center justify-center h-full">
+          <p class="text-gray-500 dark:text-gray-400">{% trans "No messages yet. Start the conversation!" %}</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Chat Input -->
+    <div class="bg-white dark:bg-gray-800 p-4 border-t border-gray-200 dark:border-gray-700">
+      <div class="flex items-center space-x-2">
+        <input type="text" id="chat-message-input" 
+               class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+               placeholder="{% trans 'Type a message...' %}">
+        {% if membership.membership_type == "leader" %}
+          <button id="openPollModal" class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </button>
+        {% endif %}
+        <button id="chat-message-submit" class="p-2 text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Poll Creation Modal -->
+{% if membership.membership_type == "leader" %}
+<dialog id="pollModal" class="modal backdrop-blur-sm">
+  <div class="modal-box bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl max-w-md w-full mx-4 p-4">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="font-bold text-xl text-gray-800 dark:text-white flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        {% trans "Create a New Poll" %}
+      </h3>
+      <button onclick="pollModal.close()" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Modal Form -->
+    <form id="create-poll-form" class="space-y-6">
+      <!-- Question Input -->
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {% trans "Poll Question" %}
+        </label>
+        <div class="relative">
+          <input type="text" id="poll-question" 
+                 class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                 placeholder="{% trans 'What would you like to ask?' %}" required>
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Choices Input -->
+      <div class="space-y-3">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {% trans "Poll Choices" %}
+        </label>
+        <div class="space-y-3">
+          <div class="relative">
+            <input type="text" class="poll-choice w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200" 
+                   placeholder="{% trans 'Choice 1' %}" required>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <span class="text-gray-400">1</span>
+            </div>
+          </div>
+          <div class="relative">
+            <input type="text" class="poll-choice w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200" 
+                   placeholder="{% trans 'Choice 2' %}" required>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <span class="text-gray-400">2</span>
+            </div>
+          </div>
+          <div id="extra-choices" class="space-y-3"></div>
+        </div>
+        
+        <button type="button" onclick="addChoiceInput()" 
+                class="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          {% trans "Add another choice" %}
+        </button>
+      </div>
+      
+      <!-- Modal Actions -->
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <button type="button" onclick="pollModal.close()" 
+                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200">
+          {% trans "Cancel" %}
+        </button>
+        <button type="submit" 
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          {% trans "Create Poll" %}
+        </button>
+      </div>
+    </form>
+  </div>
+</dialog>
+{% endif %}
+
+<script>
+  const roomSlug = "{{ room.slug }}";
+  const currentUserId = parseInt("{{ request.user.id|default:'0' }}");
+  const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomSlug + '/');
+
+  document.getElementById('chat-message-submit').onclick = function () {
+    const inputField = document.getElementById('chat-message-input');
+    const message = inputField.value.trim();
+    if (message) {
+      chatSocket.send(JSON.stringify({ 'message': message }));
+      inputField.value = '';
+    }
+  };
+
+  document.getElementById('chat-message-input').addEventListener('keyup', function (event) {
+    if (event.key === 'Enter') {
+      document.getElementById('chat-message-submit').click();
+    }
+  });
+  document.getElementById('openPollModal')?.addEventListener('click', () => {
+    document.getElementById('pollModal').showModal();
+  });
+
+  function addChoiceInput() {
+    const extraChoices = document.getElementById("extra-choices");
+    const choiceCount = extraChoices.children.length + 3; // +3 because we have 2 default choices
+    const div = document.createElement("div");
+    div.className = "relative";
+    div.innerHTML = `
+      <input type="text" class="poll-choice w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200" 
+             placeholder="{% trans 'New Choice' %}" required>
+      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        <span class="text-gray-400">${choiceCount}</span>
+      </div>
+    `;
+    extraChoices.appendChild(div);
+  }
+
+  function bindVoteButtons() {
+  document.querySelectorAll('.vote-btn').forEach(btn => {
+    btn.onclick = function () {
+      console.log("Voting on poll", this.dataset.pollId, "choice", this.dataset.choiceId);
+      chatSocket.send(JSON.stringify({
+        vote_poll_id: this.dataset.pollId,
+        vote_choice_id: this.dataset.choiceId
+      }));
+    };
+  });
+}
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.innerText = text;
+  return div.innerHTML;
+}
+
+
+  chatSocket.onmessage = function (e) {
+    const data = JSON.parse(e.data);
+
+    if (data.type === "chat") {
+      const chatBox = document.getElementById('chat-box');
+      const isSelf = parseInt(data.sender_id) === currentUserId;
+      const profileImage = data.profile_picture || '/media/profile_pictures/default.jpg';
+      const bgColor = isSelf
+  ? "bg-blue-100 text-blue-800 rounded-tl-none"
+  : "bg-blue-100 text-blue-800 rounded-tl-none";      const alignment = isSelf ? "justify-end" : "justify-start";
+      const messageContent = escapeHtml(data.message || '');
+      const msgHTML = `
+        <div class="flex ${alignment} space-x-2 mt-2">
+          ${!isSelf ? `<img src="${profileImage}" class="w-10 h-10 rounded-full border-2 border-white shadow" alt="Avatar">` : ""}
+          <div class="text-${isSelf ? 'right' : 'left'} max-w-xs">
+            <p class="text-sm text-gray-600 font-semibold flex items-center gap-1 ${isSelf ? 'justify-end' : 'justify-start'}">
+              ${isSelf ? `<span>${data.timestamp}</span><span>${data.sender}</span>` : `<span>${data.sender}</span><span>${data.timestamp}</span>`}
+            </p>
+            <div class="${bgColor} p-3 rounded-xl shadow inline-block">
+              ${messageContent}
+            </div>
+
+          </div>
+          ${isSelf ? `<img src="${profileImage}" class="w-10 h-10 rounded-full border-2 border-white shadow" alt="Avatar">` : ""}
+        </div>`;
+        console.log("💬 Rendering message:", messageContent);
+
+      chatBox.insertAdjacentHTML("beforeend", msgHTML);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      console.log("🧪 New chat message received:", data);
+
+  }
+
+  if (data.type === "poll_update") {
+  const pollElement = document.querySelector(`[data-poll-id="${data.poll_id}"]`);
+  if (!pollElement) return;
+
+  const totalVotes = data.choices.reduce((sum, c) => sum + c.vote_count, 0);
+  pollElement.querySelector(".total-votes").textContent = `Total Votes: ${totalVotes}`;
+
+  data.choices.forEach(choice => {
+    const countSpan = pollElement.querySelector(`[data-count-id="${choice.id}"]`);
+    const bar = pollElement.querySelector(`[data-bar-id="${choice.id}"]`);
+    const btn = pollElement.querySelector(`[data-choice-id="${choice.id}"]`);
+
+    if (countSpan) countSpan.textContent = choice.vote_count;
+    if (bar) {
+      const pct = totalVotes > 0 ? ((choice.vote_count / totalVotes) * 100).toFixed(2) : 0;
+      bar.style.width = `${pct}%`;
+    }
+
+    if (parseInt(data.user_id) === currentUserId && btn) {
+      btn.disabled = true;
+      if (data.user_choice_id === choice.id) {
+        btn.style.backgroundColor = "lightgreen";
+      }
+    }
+  });
+
+  if (parseInt(data.user_id) === currentUserId) {
+    const hint = pollElement.querySelector(".vote-hint");
+    if (hint) {
+      hint.textContent = "Your vote has been sent.";
+      hint.classList.remove("text-gray-500");
+      hint.classList.remove("text-green-600");
+      hint.classList.add("text-blue-600");
+    }
+  }
+}
+
+
+
+
+if (data.type === "new_poll") {
+  const chatBox = document.getElementById("chat-box");
+  const pollId = data.poll_id;
+  const isSelf = parseInt(data.sender_id) === currentUserId;  // 👈 Use sender_id from server
+  const alignment = isSelf ? "justify-end" : "justify-start";
+  const textAlign = isSelf ? "text-right" : "text-left";
+  const roundedCorner = isSelf ? "rounded-tr-none" : "rounded-tl-none";
+  const profileImage = data.profile_picture || '/media/profile_pictures/default.jpg';
+
+  const pollHTML = `
+    <div class="flex ${alignment} space-x-2 mt-2" data-poll-id="${pollId}">
+      ${!isSelf ? `<img src="${profileImage}" class="w-10 h-10 rounded-full border-2 border-white shadow" alt="Poll Icon">` : ""}
+      <div class="${textAlign} max-w-xs">
+        <p class="text-sm text-gray-600 font-semibold flex items-center gap-1 ${isSelf ? 'justify-end' : 'justify-start'}">
+          <span>📊 Poll</span>
+          <span>${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        </p>
+        <div class="bg-white border border-blue-200 p-3 rounded-xl ${roundedCorner} shadow space-y-2">
+          <strong>${data.question}</strong>
+          <p class="total-votes text-xs text-gray-500 mt-1">Total Votes: 0</p>
+          <div class="space-y-2">
+            ${data.choices.map(choice => `
+              <div>
+                <button class="vote-btn btn btn-sm btn-outline" data-choice-id="${choice.id}" data-poll-id="${pollId}">
+                  ${choice.text}
+                </button>
+                <div class="w-full bg-gray-200 rounded mt-1 h-2">
+                  <div data-bar-id="${choice.id}" class="bg-blue-500 h-2 rounded" style="width: 0%;"></div>
+                </div>
+                <span data-count-id="${choice.id}" class="text-xs">0</span>
+              </div>
+            `).join('')}
+          </div>
+          <p class="vote-hint text-gray-500 text-xs italic mt-2">Click a choice to vote</p>
+        </div>
+      </div>
+      ${isSelf ? `<img src="${profileImage}" class="w-10 h-10 rounded-full border-2 border-white shadow" alt="Poll Icon">` : ""}
+    </div>
+  `;
+
+  chatBox.innerHTML += pollHTML;
+  chatBox.scrollTop = chatBox.scrollHeight;
+  bindVoteButtons();
+}
+
+  };
+
+  document.getElementById('create-poll-form')?.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const questionInput = document.getElementById('poll-question');
+    const question = questionInput.value.trim();
+    const choiceInputs = Array.from(document.querySelectorAll('.poll-choice'));
+    const choices = choiceInputs.map(input => input.value.trim()).filter(c => c.length > 0);
+    if (question && choices.length >= 2) {
+      chatSocket.send(JSON.stringify({
+        new_poll_question: question,
+        new_poll_choices: choices
+      }));
+      questionInput.value = '';
+      choiceInputs.forEach((input, index) => {
+        if (index < 2) input.value = '';
+        else input.parentElement.remove();
+      });
+      pollModal.close();
+    } else {
+      alert("{% trans 'Please enter a poll question and at least two choices.' %}");
+    }
+  });
+
+  window.onload = () => {
+    const chatBox = document.getElementById('chat-box');
+    chatBox.scrollTop = chatBox.scrollHeight;
+    bindVoteButtons();
+  };
+</script>
+
+
+<template id="mini-chat-template">
+  <div class="mini-chat bg-white border rounded-xl shadow-xl w-72 h-80 flex flex-col overflow-hidden">
+    <div class="bg-blue-600 text-white p-2 flex justify-between items-center">
+      <span class="font-semibold chat-title">Chat</span>
+      <button class="close-chat text-white hover:text-gray-200">&times;</button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-2 text-sm" data-messages></div>
+    <div class="p-2 border-t flex gap-1">
+      <input class="flex-1 border rounded px-2 py-1 text-sm" type="text" placeholder="Type a message..." data-input>
+      <button class="bg-blue-600 text-white px-3 py-1 rounded text-sm" data-send>Send</button>
+    </div>
+  </div>
+</template>
+
+<script>
+  function openMiniChat(title, socketUrl) {
+    const dock = document.getElementById("chat-dock");
+    const existing = [...dock.children].find(c => c.dataset.url === socketUrl);
+    if (existing) return; // Prevent duplicates
+
+    const template = document.getElementById("mini-chat-template").content.cloneNode(true);
+    const chatEl = template.querySelector(".mini-chat");
+    chatEl.dataset.url = socketUrl;
+
+    chatEl.querySelector(".chat-title").textContent = title;
+    chatEl.querySelector(".close-chat").onclick = () => chatEl.remove();
+
+    const input = chatEl.querySelector("[data-input]");
+    const sendBtn = chatEl.querySelector("[data-send]");
+    const messagesContainer = chatEl.querySelector("[data-messages]");
+
+    const socket = new WebSocket(socketUrl);
+
+    socket.onmessage = e => {
+      const data = JSON.parse(e.data);
+      const msg = document.createElement("div");
+      msg.textContent = `${data.sender}: ${data.message}`;
+      messagesContainer.appendChild(msg);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    };
+
+    sendBtn.onclick = () => {
+      const text = input.value.trim();
+      if (text) {
+        socket.send(JSON.stringify({ message: text }));
+        input.value = "";
+      }
+    };
+
+    input.addEventListener("keyup", e => {
+      if (e.key === "Enter") sendBtn.click();
+    });
+
+    dock.appendChild(chatEl);
+  }
+</script>
+
+{% endblock %}

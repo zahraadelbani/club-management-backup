@@ -1,0 +1,9 @@
+{% load i18n %}
+<h2>{{ poll.question }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {% for choice in poll.choices.all %}
+        <input type="radio" name="choice" value="{{ choice.id }}"> {{ choice.text }} <br>
+    {% endfor %}
+    <button type="submit">{% trans "Vote" %}</button>
+</form>

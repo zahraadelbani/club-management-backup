@@ -1,0 +1,125 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+{% block chat_dock_class %}flex{% endblock %}
+
+{% block content %}
+{% block chat_dock %}
+  <div id="chat-dock" class="fixed bottom-0 right-0 flex gap-3 p-3 z-50"></div>
+{% endblock %}
+
+<div class="max-w-3xl mx-auto p-4 bg-gradient-to-r from-blue-100 via-purple-200 to-pink-200 rounded-xl shadow-lg  bg-blue-100">
+  <h2 class="text-xl font-semibold mb-4 text-gray-800">{% trans "Chat with" %} {{ other_user.name }}</h2>
+
+  <div id="chat-box"
+       class="h-96 overflow-y-auto border rounded-lg p-4 space-y-4 bg-white shadow-lg border-gray-300"
+  >
+    {% for msg in messages %}
+      {% if msg.sender.id == request.user.id %}
+        <!-- Sent message -->
+        <div class="flex justify-end items-end space-x-2 space-x-reverse">
+          <div class="text-right max-w-xs">
+            <p class="text-sm text-gray-600 mb-1">
+              <strong>{{ msg.sender.name }}</strong>
+              <span class="text-xs text-gray-400 ml-1">{{ msg.timestamp|date:"H:i" }}</span>
+            </p>
+            <div class="bg-green-100 text-gray-800 p-3 rounded-2xl inline-block shadow">
+              {{ msg.content }}
+            </div>
+          </div>
+          <img class="w-10 h-10 rounded-full object-cover border border-white shadow" 
+               src="{{ msg.sender.profile_picture.url|default:'/static/img/default-avatar.png' }}" 
+               alt="{{ msg.sender.name }}">
+        </div>
+      {% else %}
+        <!-- Received message -->
+        <div class="flex items-end space-x-2">
+          <img class="w-10 h-10 rounded-full object-cover border border-white shadow" 
+               src="{{ msg.sender.profile_picture.url|default:'/static/img/default-avatar.png' }}" 
+               alt="{{ msg.sender.name }}">
+          <div class="text-left max-w-xs">
+            <p class="text-sm text-gray-600 mb-1">
+              <strong>{{ msg.sender.name }}</strong>
+              <span class="text-xs text-gray-400 ml-1">{{ msg.timestamp|date:"H:i" }}</span>
+            </p>
+            <div class="bg-gray-200 text-gray-800 p-3 rounded-2xl inline-block shadow">
+              {{ msg.content }}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% empty %}
+      <p class="text-center text-gray-500">{% trans "No messages yet. Start the conversation!" %}</p>
+    {% endfor %}
+  </div>
+
+  <div class="mt-4 flex items-center gap-2">
+    <input type="text" id="dm-message-input" placeholder="{% trans 'Type a message...' %}"
+           class="flex-1 border rounded-lg px-4 py-2 shadow focus:outline-none focus:ring focus:border-blue-300">
+    <button id="dm-message-submit"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition">
+      {% trans "Send
+    " %}</button>
+  </div>
+</div>
+
+<input type="hidden" id="receiver-id" value="{{ other_user.id }}">
+<script>
+  const receiverId = "{{ other_user.id }}";
+  const currentUserId = parseInt("{{ request.user.id }}");
+
+  const chatSocket = new WebSocket(
+    'ws://' + window.location.host + '/ws/dm/' + receiverId + '/'
+  );
+
+  chatSocket.onmessage = function (e) {
+    const data = JSON.parse(e.data);
+    const chatBox = document.getElementById("chat-box");
+
+    const isSelf = data.sender_id === currentUserId;
+    const alignment = isSelf ? "justify-end" : "justify-start";
+    const textAlign = isSelf ? "text-right" : "text-left";
+    const bgColor = isSelf ? "bg-green-100" : "bg-gray-200";
+    const profileSide = isSelf ? "ml-2" : "mr-2";
+
+    const newMessage = `
+      <div class="flex ${alignment} items-end space-x-2 ${isSelf ? 'space-x-reverse' : ''}">
+        ${!isSelf ? `<img src="${data.profile_picture}" class="w-10 h-10 rounded-full object-cover border shadow ${profileSide}">` : ""}
+        <div class="${textAlign} max-w-xs">
+          <p class="text-sm text-gray-600 mb-1">
+            <strong>${data.sender}</strong>
+            <span class="text-xs text-gray-400 ml-1">${data.timestamp}</span>
+          </p>
+          <div class="${bgColor} text-gray-800 p-3 rounded-2xl inline-block shadow">
+            ${data.message}
+          </div>
+        </div>
+        ${isSelf ? `<img src="${data.profile_picture}" class="w-10 h-10 rounded-full object-cover border shadow ${profileSide}">` : ""}
+      </div>
+    `;
+
+    chatBox.innerHTML += newMessage;
+    chatBox.scrollTop = chatBox.scrollHeight;
+  };
+
+  document.getElementById("dm-message-submit").onclick = function () {
+    const inputField = document.getElementById("dm-message-input");
+    const message = inputField.value.trim();
+    if (message) {
+      chatSocket.send(JSON.stringify({ message }));
+      inputField.value = "";
+    }
+  };
+
+  document.getElementById("dm-message-input").addEventListener("keyup", function (event) {
+    if (event.key === "Enter") {
+      document.getElementById("dm-message-submit").click();
+    }
+  });
+
+  window.onload = () => {
+    const chatBox = document.getElementById("chat-box");
+    chatBox.scrollTop = chatBox.scrollHeight;
+  };
+</script>
+
+{% endblock %}

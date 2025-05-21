@@ -1,0 +1,843 @@
+
+{% load static tailwind_tags %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token }}" />
+  <title>Club Management System</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+  <!-- On page load or when changing themes, best to add inline in `head` to avoid FOUC -->
+  <script>
+    if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  </script>
+
+  {% tailwind_css %} {% block extra_head %}{% endblock extra_head %}
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900">
+  <!-- Navbar -->
+  
+    <nav id="main-nav"     class="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700 transition-all duration-300">
+      <div class="px-3 py-3 lg:px-5 lg:pl-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center justify-start rtl:justify-end">
+            <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar"
+              type="button"
+              class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
+              <span class="sr-only">Open sidebar</span>
+              <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg">
+                <path clip-rule="evenodd" fill-rule="evenodd"
+                  d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z">
+                </path>
+              </svg>
+            </button>
+            <a href="#" class="flex ms-2 md:me-24">
+              <img src="{% static 'emu.png' %}" class="h-8 me-3" alt="School Logo" />
+              <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">EMU
+                A.CENTER</span>
+            </a>
+          </div>
+          <div class="flex items-center">
+            <div class="flex items-center ms-3">
+
+
+              <!-- Theme Button -->
+              <button id="theme-toggle" type="button"
+                class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
+                <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                </svg>
+                <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                    fill-rule="evenodd" clip-rule="evenodd"></path>
+                </svg>
+              </button>
+
+
+              <!-- Translate Button -->
+              <div class="relative">
+                <button id="language-btn" type="button"
+                  class="p-2 mr-1 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700">
+                  <i class="fas fa-language text-xl"></i>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div id="language-dropdown"
+                  class="hidden absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg dark:bg-gray-700">
+                  <form action="{% url 'set_language' %}" method="post" class="p-2">
+                    {% csrf_token %}
+                    <select name="language" onchange="this.form.submit()"
+                      class="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 focus:outline-none">
+                      {% get_current_language as LANGUAGE_CODE %}
+                      {% get_available_languages as LANGUAGES %}
+                      {% for lang_code, lang_name in LANGUAGES %}
+                      <option value="{{ lang_code }}" {% if lang_code == LANGUAGE_CODE %}selected{% endif %}>
+                        {{ lang_name }}
+                      </option>
+                      {% endfor %}
+                    </select>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Notification Button -->
+              <button type="button"
+                class="p-2 mr-1 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700">
+                <i class="fas fa-bell text-xl"></i>
+              </button>
+
+              <!-- Profile Dropdown -->
+              <div class="relative">
+                <button type="button"
+                  class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
+                  aria-expanded="false" data-dropdown-toggle="dropdown-user">
+                  <span class="sr-only">Open user menu</span>
+                  <img class="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                    alt="user photo" />
+                </button>
+                <div
+                  class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600"
+                  id="dropdown-user">
+                  <div class="px-4 py-3" role="none">
+                    <p class="text-sm text-gray-900 dark:text-white" role="none">
+                      John Doe
+                    </p>
+                    <p class="text-sm font-medium text-gray-500 truncate dark:text-gray-300" role="none">
+                      john.doe@example.com
+                    </p>
+                  </div>
+                  <ul class="py-1" role="none">
+                    <li>
+                      <a href="#"
+                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                        role="menuitem">Dashboard</a>
+                    </li>
+                    <li>
+                      <a href="#"
+                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                        role="menuitem">Settings</a>
+                    </li>
+                    <li>
+                      <a href="#"
+                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                        role="menuitem">Sign out</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  <div class="full-div grid grid-rows-2">
+    <!-- Sidebar -->
+    <aside id="logo-sidebar"
+      class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
+      aria-label="Sidebar">
+      <div class="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
+        <ul class="space-y-2 font-medium">
+
+          <!-- Club Leader Dropdown -->
+          {% if is_leader %}
+          <li>
+            <button type="button"
+              class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+              aria-controls="dropdown-club-leader" data-collapse-toggle="dropdown-club-leader">
+              <i class="fas fa-user-tie text-gray-500 dark:text-gray-400"></i>
+              <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Club Leader</span>
+              <svg class="w-3 h-3 transition-transform duration-200 transform group-[[aria-expanded='true']]:rotate-180"
+                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="m1 1 4 4 4-4" />
+              </svg>
+            </button>
+            <ul id="dropdown-club-leader" class="hidden py-2 space-y-2">
+              <li class="timeline-item">
+                <a href="{% url 'club_leader:dashboard' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'club_leader:club_members' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Club Members</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'club_leader:calendar' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Event Management</span>
+                </a>
+              </li>
+
+
+              <li class="timeline-item">
+                <a href="{% url 'club_leader:list_documents' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Documents</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'club_leader:list_announcements' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Announcements</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'club_leader:faq_leader' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Leader FAQ</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'club_leader:feedback_list' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Feedback</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+          {% endif %}
+
+          <!-- Club Member Dropdown -->
+          {% if is_member %}
+          <li>
+            <button type="button"
+              class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+              aria-controls="dropdown-club-member" data-collapse-toggle="dropdown-club-member">
+              <i class="fas fa-user-tie text-gray-500 dark:text-gray-400"></i>
+              <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Club Member</span>
+              <svg class="w-3 h-3 transition-transform duration-200 transform group-[[aria-expanded='true']]:rotate-180"
+                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="m1 1 4 4 4-4" />
+              </svg>
+            </button>
+            <ul id="dropdown-club-member" class="hidden py-2 space-y-2">
+              <li class="timeline-item">
+                <a href="{% url 'club_member:dashboard' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'club_member:member_announcements' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Announcements</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                {% if election and election.is_nomination_open and not user_already_nominated %}
+                <a href="{% url 'voting:self_nominate' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Nominate Yourself</span>
+                </a>
+              </li>
+              {% endif %}
+              <li class="timeline-item">
+                <a href="{% url 'club_member:submit_feedback' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Submit Feedback</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'club_member:event_calendar' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Events</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'club_member:contact' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Contact</span>
+                </a>
+              </li>
+              {%if election and election.has_started and not election.has_ended %}
+              <li class="timeline-item">
+                <a href="{% url 'voting:elections' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Vote Now</span>
+                </a>
+              </li>
+              {% endif %}
+            </ul>
+          </li>
+          {% endif %}
+
+          <!-- Admin Dropdown -->
+
+          {% if user.get_role == "activity_center_admin" %}
+          <li>
+            <button type="button"
+              class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+              aria-controls="dropdown-admin" data-collapse-toggle="dropdown-admin">
+              <i class="fas fa-user text-gray-500 dark:text-gray-400"></i>
+              <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Admin</span>
+              <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="m1 1 4 4 4-4" />
+              </svg>
+            </button>
+            <ul id="dropdown-admin" class="hidden py-2 space-y-2">
+              <li class="timeline-item">
+                <a href="{% url 'activity_center_admin:dashboard' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Admin Panel</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'activity_center_admin:club_list' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Manage Clubs</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'activity_center_admin:event_list' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Manage Events</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'activity_center_admin:announcement_list' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Manage Announcements</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'activity_center_admin:manage_nominations' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Self-Nominations</span>
+                </a>
+              </li>
+              <li class="timeline-item">
+                <a href="{% url 'activity_center_admin:manage_elections' %}"
+                  class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-7 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                  <span class="timeline-dot"></span>
+                  <span>Manage Elections</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+          {% endif %}
+
+
+
+          <!--User Dashboard-->
+          {% if not is_leader and not is_member and not user.get_role == "activity_center_admin"%}
+          <li>
+            <a href="{% url 'users:udashboard' %}"
+              class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+              <svg
+                class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 18">
+                <path
+                  d="M6.143 0H1.857A1.857 1.857 0 0 0 0 1.857v4.286C0 7.169.831 8 1.857 8h4.286A1.857 1.857 0 0 0 8 6.143V1.857A1.857 1.857 0 0 0 6.143 0Zm10 0h-4.286A1.857 1.857 0 0 0 10 1.857v4.286C10 7.169 10.831 8 11.857 8h4.286A1.857 1.857 0 0 0 18 6.143V1.857A1.857 1.857 0 0 0 16.143 0Zm-10 10H1.857A1.857 1.857 0 0 0 0 11.857v4.286C0 17.169.831 18 1.857 18h4.286A1.857 1.857 0 0 0 8 16.143v-4.286A1.857 1.857 0 0 0 6.143 10Zm10 0h-4.286A1.857 1.857 0 0 0 10 11.857v4.286c0 1.026.831 1.857 1.857 1.857h4.286A1.857 1.857 0 0 0 18 16.143v-4.286A1.857 1.857 0 0 0 16.143 10Z" />
+              </svg>
+              <span class="flex-1 ms-3 whitespace-nowrap">User Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'users:announcements' %}"
+              class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+              <svg
+                class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                </path>
+              </svg>
+              <span class="flex-1 ms-3 whitespace-nowrap">General Announcements</span>
+            </a>
+          </li>
+          {% endif %}
+          <li>
+            <a href="{% url 'users:profile' %}"
+              class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+              <svg
+                class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
+                <path
+                  d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z" />
+              </svg>
+              <span class="flex-1 ms-3 whitespace-nowrap">Profile</span>
+            </a>
+          </li>
+
+          {% if is_leader or is_member %}
+          <li>
+            <a href="{% url 'messaging:rooms' %}"
+              class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+              <svg
+                class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 13a8.949 8.949 0 0 1-4.951-1.488A3.987 3.987 0 0 1 9 13h2a3.987 3.987 0 0 1 3.951 3.512A8.949 8.949 0 0 1 10 18Z" />
+              </svg>
+              <span class="flex-1 ms-3 whitespace-nowrap">Messaging</span>
+            </a>
+          </li>
+          {% endif %}
+          {% if is_member or user.get_role == "user" %}
+          <li>
+            <a href="{% url 'club_member:faq_user_member' %}"
+              class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+              <svg
+                class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm0 16a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm1-5.034V12a1 1 0 0 1-2 0v-1.418a1 1 0 0 1 1.038-.999 1.436 1.436 0 0 0 1.488-1.441 1.501 1.501 0 1 0-3-.116.986.986 0 0 1-1.037.961 1 1 0 0 1-.96-1.037A3.5 3.5 0 1 1 11 11.466Z" />
+              </svg>
+              <span class="flex-1 ms-3 whitespace-nowrap">FAQ</span>
+            </a>
+          </li>
+          {% endif %}
+          <li>
+            <a href="{% url 'account_logout' %}"
+              class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+              <svg
+                class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 16">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3" />
+              </svg>
+              <span class="flex-1 ms-3 whitespace-nowrap">Logout</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="p-4 sm:ml-64">
+      <div class="p-4 mt-14">
+        <div class="content-div">
+          {% block content %}
+          <div class="breadcrumbs text-sm text-gray-600 mb-4">
+            {% block breadcrumbs %}{% endblock %}
+          </div>
+
+          {% endblock content %}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Floating Chatbot Button -->
+    <div id="chatbot-button"
+      class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300 dark:bg-blue-700 dark:hover:bg-blue-600 flex items-center justify-center cursor-pointer">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+      <span class="sr-only">Open chatbot</span>
+    </div>
+
+    <!-- Chatbot Container -->
+    <div id="chatbot-container"
+      class="fixed bottom-24 right-6 w-80 h-[32rem] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl flex flex-col hidden z-40 transform transition-all duration-300 ease-in-out">
+      <!-- Header -->
+      <div class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          <span class="ml-2 font-medium">ClubBot Assistant</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="minimize-chatbot" class="text-white hover:text-gray-200 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+            </svg>
+          </button>
+          <button id="close-chatbot" class="text-white hover:text-gray-200 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Messages -->
+      <div id="chat-log" class="flex-1 p-4 overflow-y-auto text-sm dark:text-gray-200 space-y-3">
+        <div class="flex justify-start">
+          <div class="bg-blue-100 dark:bg-blue-900 rounded-lg px-4 py-2 max-w-[80%]">
+            <p>Hello! I'm ClubBot, your virtual assistant. How can I help you with club activities today?</p>
+          </div>
+        </div>
+        <!-- Messages will be appended here -->
+      </div>
+
+      <!-- Input Area -->
+      <div class="border-t border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-700 rounded-b-lg">
+        <div class="relative flex">
+          <input type="text" id="chat-input" placeholder="Type your message..."
+            class="flex-1 border border-gray-300 dark:border-gray-600 rounded-l-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-600 dark:text-white dark:placeholder-gray-300"
+            autocomplete="off">
+          <button id="send-button"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </button>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">ClubBot may produce inaccurate information about clubs
+          and events.</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Chatbot Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const chatButton = document.getElementById("chatbot-button");
+      const chatContainer = document.getElementById("chatbot-container");
+      const closeButton = document.getElementById("close-chatbot");
+      const minimizeButton = document.getElementById("minimize-chatbot");
+      const input = document.getElementById("chat-input");
+      const log = document.getElementById("chat-log");
+      const sendButton = document.getElementById("send-button");
+
+      // Track if chatbot is minimized
+      let isMinimized = false;
+      let isOpen = false;
+
+      // Initialize as hidden
+      chatContainer.style.display = 'none';
+
+      // Toggle chatbot visibility
+      function toggleChatbot() {
+        if (chatContainer.style.display === 'none' || chatContainer.style.display === '') {
+          chatContainer.style.display = "flex";
+          isOpen = true;
+          if (isMinimized) {
+            chatContainer.classList.remove('h-16');
+            chatContainer.classList.add('h-[32rem]');
+            isMinimized = false;
+          }
+          input.focus();
+        } else {
+          chatContainer.style.display = "none";
+          isOpen = false;
+        }
+      }
+
+      // Minimize chatbot
+      function minimizeChatbot() {
+        if (isMinimized) {
+          chatContainer.classList.remove('h-16');
+          chatContainer.classList.add('h-[32rem]');
+        } else {
+          chatContainer.classList.remove('h-[32rem]');
+          chatContainer.classList.add('h-16');
+        }
+        isMinimized = !isMinimized;
+      }
+
+      // Close chatbot
+      function closeChatbot() {
+        chatContainer.style.display = "none";
+        isOpen = false;
+      }
+
+      // Event listeners
+      chatButton.addEventListener("click", toggleChatbot);
+      closeButton.addEventListener("click", closeChatbot);
+      minimizeButton.addEventListener("click", minimizeChatbot);
+
+      // Enable/disable send button based on input
+      input.addEventListener("input", function () {
+        sendButton.disabled = !this.value.trim();
+      });
+
+      // Handle sending messages
+      function sendMessage() {
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        appendMessage("user", msg);
+        input.value = "";
+        sendButton.disabled = true;
+
+        // Show typing indicator
+        const typingIndicator = appendMessage("bot", "Typing...", true);
+
+        fetch("{% url 'chatbot_response' %}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+          },
+          body: JSON.stringify({ message: msg })
+        })
+          .then(res => {
+            if (!res.ok) throw new Error('Network response was not ok');
+            return res.json();
+          })
+          .then(data => {
+            // Remove typing indicator and show actual response
+            typingIndicator.remove();
+            appendMessage("bot", data.response);
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            typingIndicator.remove();
+            appendMessage("bot", "Sorry, I'm having trouble responding right now. Please try again later.");
+          });
+      }
+
+      // Handle Enter key
+      input.addEventListener("keypress", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Handle send button click
+      sendButton.addEventListener("click", sendMessage);
+
+      // Append message to chat log
+      function appendMessage(sender, text, isTyping = false) {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("flex", "mb-2");
+
+        if (sender === "user") {
+          messageDiv.classList.add("justify-end");
+          messageDiv.innerHTML = `
+          <div class="bg-gray-200 dark:bg-gray-700 rounded-lg px-4 py-2 max-w-[80%]">
+            <p>${text}</p>
+          </div>
+        `;
+        } else {
+          messageDiv.classList.add("justify-start");
+          const typingClass = isTyping ? 'typing-indicator' : '';
+          messageDiv.innerHTML = `
+          <div class="bg-blue-100 dark:bg-blue-900 rounded-lg px-4 py-2 max-w-[80%] ${typingClass}">
+            <p>${text}</p>
+          </div>
+        `;
+        }
+
+        log.appendChild(messageDiv);
+        log.scrollTop = log.scrollHeight;
+        return messageDiv;
+      }
+
+      // Close chatbot when clicking outside
+      document.addEventListener('click', function (e) {
+        if (isOpen &&
+          !chatContainer.contains(e.target) &&
+          !chatButton.contains(e.target) &&
+          e.target !== chatButton) {
+          closeChatbot();
+        }
+      });
+    });
+  </script>
+
+  <style>
+    /* Typing indicator animation */
+    .typing-indicator p::after {
+      content: '...';
+      display: inline-block;
+      animation: typingDots 1.5s infinite;
+    }
+
+    @keyframes typingDots {
+
+      0%,
+      20% {
+        content: '.';
+      }
+
+      40% {
+        content: '..';
+      }
+
+      60%,
+      100% {
+        content: '...';
+      }
+    }
+
+    /* Smooth transitions for chat messages */
+    #chat-log div {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Better scrollbar for chat */
+    #chat-log::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #chat-log::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #chat-log::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 3px;
+    }
+
+    #chat-log::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
+
+  <!-- Rest of script -->
+  <script>
+    // Add blur effect to navbar on scroll
+    window.addEventListener("scroll", function () {
+      const nav = document.getElementById("main-nav");
+      if (window.scrollY > 10) {
+        nav.classList.add("nav-blur");
+      } else {
+        nav.classList.remove("nav-blur");
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const currentPath = window.location.pathname;
+      const dropdownLinks = document.querySelectorAll(
+        "#dropdown-club-leader a, #dropdown-club-member a, #dropdown-admin a"
+      );
+
+      dropdownLinks.forEach((link) => {
+        if (link.getAttribute("href") === currentPath) {
+          link.classList.add("active-link");
+
+          // Open parent dropdown
+          const dropdownId = link.closest("ul").id;
+          const dropdownButton = document.querySelector(
+            `button[aria-controls="${dropdownId}"]`
+          );
+          if (dropdownButton) {
+            dropdownButton.setAttribute("aria-expanded", "true");
+            const dropdown = document.getElementById(dropdownId);
+            if (dropdown) {
+              dropdown.classList.remove("hidden");
+            }
+          }
+        }
+
+        // Add hover effect for timeline dots
+        link.addEventListener("mouseenter", function () {
+          const dot = this.querySelector(".timeline-dot");
+          if (dot) dot.style.backgroundColor = "#3B82F6";
+        });
+
+        link.addEventListener("mouseleave", function () {
+          if (!this.classList.contains("active-link")) {
+            const dot = this.querySelector(".timeline-dot");
+            if (dot) dot.style.backgroundColor = "#9CA3AF";
+          }
+        });
+      });
+
+      // 🚀 Move this outside the theme toggle block:
+
+      console.log('Language dropdown script loaded!');  // ✅ Check this in console
+
+      const langBtn = document.getElementById('language-btn');
+      const langDropdown = document.getElementById('language-dropdown');
+
+      langBtn.addEventListener('click', function (e) {
+        console.log('Language button clicked!');  // ✅ Check this in console
+        e.stopPropagation();
+        langDropdown.classList.toggle('hidden');
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!langDropdown.contains(e.target) && !langBtn.contains(e.target)) {
+          langDropdown.classList.add('hidden');
+        }
+      });
+    });
+
+
+    var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+    var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+    // Change the icons inside the button based on previous settings
+    if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      themeToggleLightIcon.classList.remove('hidden');
+    } else {
+      themeToggleDarkIcon.classList.remove('hidden');
+    }
+
+    var themeToggleBtn = document.getElementById('theme-toggle');
+
+    themeToggleBtn.addEventListener('click', function () {
+      // toggle icons inside button
+      themeToggleDarkIcon.classList.toggle('hidden');
+      themeToggleLightIcon.classList.toggle('hidden');
+
+      // if set via local storage previously
+      if (localStorage.getItem('color-theme')) {
+        if (localStorage.getItem('color-theme') === 'light') {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('color-theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('color-theme', 'light');
+        }
+      } else {
+        if (document.documentElement.classList.contains('dark')) {
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('color-theme', 'light');
+        } else {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('color-theme', 'dark');
+        }
+      }
+    });
+
+  </script>
+  <!-- Flowbite script -->
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+</body>
+
+</html>

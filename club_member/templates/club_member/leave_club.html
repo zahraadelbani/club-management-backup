@@ -1,0 +1,29 @@
+{% load static %}
+{% load i18n %}
+
+<!-- Leave Club -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% trans "Leave a Club" %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>{% trans "Leave a Club" %}</h1>
+    </header>
+    <main>
+        <form method="post">
+            {% csrf_token %}
+            <label for="club_id">{% trans "Select a Club:" %}</label>
+            <select name="club_id" id="club_id" required>
+                {% for club in member_clubs %}
+                    <option value="{{ club.id }}">{{ club.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">{% trans "Request to Leave" %}</button>
+        </form>
+    </main>
+</body>
+</html>

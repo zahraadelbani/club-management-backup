@@ -1,0 +1,180 @@
+{% extends "navbar.html" %}
+
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header Section -->
+  <div class="md:flex md:items-center md:justify-between mb-8">
+    <div class="flex-1 min-w-0">
+      <h1 class="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">
+        {% trans "Manage Elections" %}
+      </h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        {% trans "Create and manage club leadership elections" %}
+      </p>
+    </div>
+    <div class="mt-4 flex md:mt-0 md:ml-4">
+      <a href="{% url 'activity_center_admin:create_election' %}" 
+        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        {% trans "Create Election" %}
+      </a>
+    </div>
+  </div>
+
+  {% if elections %}
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {% for e in elections %}
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg transition-all duration-200 hover:shadow-lg">
+          <!-- Card Header -->
+          <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                {{ e.name }}
+              </h3>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ e.status_color }}">
+                {% trans e.status %}
+              </span>
+            </div>
+            {% if e.results_verified %}
+              <p class="mt-1 text-sm text-green-600 font-semibold">✔ {% trans "Results Verified" %}</p>
+            {% endif %}
+          </div>
+
+          <!-- Card Body -->
+          <div class="px-4 py-5 sm:p-6">
+            <dl class="grid grid-cols-1 gap-4">
+              <div class="flex items-start">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{% trans "Nomination Period" %}</dt>
+                  <dd class="text-sm text-gray-900 dark:text-white">
+                    {{ e.nomination_start|date:"M d, Y" }} – {{ e.nomination_end|date:"M d, Y" }}
+                  </dd>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{% trans "Voting Period" %}</dt>
+                  <dd class="text-sm text-gray-900 dark:text-white">
+                    {{ e.start_date|date:"M d, Y" }} – {{ e.end_date|date:"M d, Y" }}
+                  </dd>
+                </div>
+              </div>
+            </dl>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="px-4 py-4 sm:px-6 bg-gray-50 dark:bg-gray-700">
+            <div class="flex flex-wrap gap-2">
+
+              {% if not e.results_verified %}
+                <a href="{% url 'activity_center_admin:edit_election' e.id %}" 
+                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                  <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  {% trans "Edit" %}
+                </a>
+
+                <form method="post" action="{% url 'activity_center_admin:delete_election' e.id %}" 
+                      onsubmit="return confirm('{% trans 'Are you sure you want to delete this election?' %}');"
+                      class="inline">
+                  {% csrf_token %}
+                  <button type="submit" 
+                          class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    {% trans "Delete" %}
+                  </button>
+                </form>
+
+                <a href="{% url 'activity_center_admin:toggle_election_active' e.id %}" 
+                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md {% if e.is_active %}text-green-700 bg-green-100 hover:bg-green-200{% else %}text-gray-700 bg-gray-100 hover:bg-gray-200{% endif %} focus:outline-none focus:ring-2 focus:ring-offset-2 {% if e.is_active %}focus:ring-green-500{% else %}focus:ring-gray-500{% endif %}">
+                  <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {% if e.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
+                </a>
+              {% endif %}
+
+              <div class="flex flex-wrap gap-2 mt-2">
+                {% if e.is_active and e.end_date > now %}
+
+                  <a href="{% url 'voting:live_results' e.id %}" 
+                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    📊 {% trans "Live Results" %}
+                  </a>
+                {% endif %}
+
+                {% if e.results_verified %}
+                  <a href="{% url 'voting:results' e.id %}" 
+                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-800 hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600">
+                    🏁 {% trans "Final Results" %}
+                  </a>
+                {% endif %}
+
+                <a href="{% url 'voting:export_results_excel' e.id %}" 
+                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                  📄 {% trans "Export Excel" %}
+                </a>
+                <a href="{% url 'voting:export_results_pdf' e.id %}" 
+                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                  🧾 {% trans "Export PDF" %}
+                </a>
+
+                {% if not e.results_verified and e.end_date < now %}
+                  <form method="post" action="{% url 'voting:verify_results' e.id %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                            onclick="return confirm('Are you sure you want to verify the results and assign leaders?');">
+                      ✅ {% trans "Verify Results" %}
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-12">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{% trans "No elections found" %}</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        {% trans "Get started by creating a new election." %}
+      </p>
+      <div class="mt-6">
+        <a href="{% url 'activity_center_admin:create_election' %}" 
+          class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          {% trans "Create Election" %}
+        </a>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Flowbite -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+{% endblock %}

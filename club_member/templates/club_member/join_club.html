@@ -1,0 +1,29 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% trans "Join a Club" %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>{% trans "Join a Club" %}</h1>
+    </header>
+
+    <main>
+        <form method="post">
+            {% csrf_token %}
+            <label for="club_id">{% trans "Select a Club:" %}</label>
+            <select name="club_id" id="club_id" required>
+                {% for club in available_clubs %}
+                    <option value="{{ club.id }}">{{ club.name }} ({% trans "Quota:" %} {{ club.quota }} {% trans "members" %})</option>
+                {% endfor %}
+            </select>
+            <button type="submit">{% trans "Join Club" %}</button>
+        </form>
+    </main>
+</body>
+</html>

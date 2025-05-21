@@ -1,0 +1,383 @@
+{% extends "navbar.html" %}
+{% block content %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+  <a href="{% url 'club_leader:dashboard' %}" class="hover:text-blue-600 dark:hover:text-blue-400">Club Leader</a>
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+  </svg>
+  <a href="{% url 'club_leader:calendar' %}" class="hover:text-blue-600 dark:hover:text-blue-400">Events</a>
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+  </svg>
+  <span class="text-gray-700 dark:text-gray-300">Edit Event</span>
+</div>
+{% endblock %}
+
+<style>
+  .event-edit-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+  }
+</style>
+
+<div class="event-edit-container">
+  <div class="modal-container bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+    <div class="modal-header p-4 border-b dark:border-gray-700">
+      <h3 class="modal-title text-xl font-semibold text-gray-900 dark:text-white">Edit Event: {{ event.title }}</h3>
+    </div>
+    
+    <div class="modal-body p-4">
+      <div class="status-notice bg-yellow-50 dark:bg-gray-700 p-4 rounded-lg mb-4">
+        <strong class="text-yellow-800 dark:text-yellow-200">Note:</strong> After editing, the event status will be reset to <strong class="text-yellow-800 dark:text-yellow-200">pending</strong> for re-approval.
+      </div>
+      
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        {% if event.image %}
+        <div class="current-image-container mb-4">
+          <label class="current-image-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Image</label>
+          <div class="current-image-wrapper bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <img src="{{ event.image.url }}" alt="Current Event Image" class="current-image rounded-lg">
+            <div class="current-image-info mt-2 text-sm text-gray-600 dark:text-gray-400">
+              <div>{{ event.image.name|slice:"20" }}{% if event.image.name|length > 20 %}...{% endif %}</div>
+              <div class="image-actions mt-2">
+                <button type="button" class="image-action-btn delete-btn text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  </svg>
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        
+        <div class="form-group mb-4">
+          <label for="id_title" class="form-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Event Title *</label>
+          <input type="text" name="title" id="id_title" class="form-control bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="{{ form.title.value }}" required>
+        </div>
+        
+        <div class="form-group mb-4">
+          <label for="id_event_date" class="form-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date *</label>
+          <input type="date" name="event_date" id="id_event_date" class="form-control bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="{{ form.event_date.value|date:'Y-m-d' }}" required>
+        </div>
+
+        <div class="form-group mb-4">
+          <label for="id_participants" class="form-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Number of Participants *</label>
+          <input type="number" name="participants" id="id_participants" class="form-control bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="{{ form.participants.value }}" min="1" required>
+        </div>
+
+        <div class="form-group mb-4">
+          <label for="id_image" class="form-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Event Image</label>
+          <div class="file-upload-wrapper">
+            <input type="file" name="image" id="id_image" class="file-upload-input hidden" accept="image/*">
+            <label for="id_image" class="file-upload-label flex items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-4 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                </svg>
+                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group mb-4">
+          <label for="id_needs" class="form-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Event Needs *</label>
+          <textarea name="needs" id="id_needs" class="form-control bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" rows="3" required>{{ form.needs.value }}</textarea>
+        </div>
+
+        <div class="form-group mb-4">
+          <label for="id_total_cost" class="form-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estimated Total Cost TL</label>
+          <div class="relative">
+           
+            <input type="number" name="total_cost" id="id_total_cost" class="form-control bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-32 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="{{ form.total_cost.value }}" min="0" step="0.01" required>
+          </div>
+        </div>
+
+        <div class="form-group mb-4">
+          <label for="id_transportation_request" class="form-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Transportation Request</label>
+          <select name="transportation_request" id="id_transportation_request" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="" disabled {% if not form.transportation_request.value %}selected{% endif %}>Select transportation request</option>
+            {% for value, label in form.transportation_request.field.choices %}
+              <option value="{{ value }}" {% if form.transportation_request.value == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group mb-4">
+          <label for="location_picker" class="form-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Event Location *</label>
+          <input type="text" id="location_picker" class="form-control bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search location..." readonly onclick="openLocationModal()" value="{{ form.location_name.value }}">
+          <input type="hidden" name="location_name" id="id_location_name" value="{{ form.location_name.value }}">
+          <input type="hidden" name="latitude" id="id_latitude" value="{{ form.latitude.value }}">
+          <input type="hidden" name="longitude" id="id_longitude" value="{{ form.longitude.value }}">
+        </div>
+
+        <div class="form-group mb-4">
+          <label for="id_supporting_documents" class="form-label block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Supporting Documents</label>
+          <div class="file-upload-wrapper">
+            <input type="file" name="supporting_documents" id="id_supporting_documents" class="file-upload-input hidden" multiple>
+            <label for="id_supporting_documents" class="file-upload-label flex items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-4 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L10 1.586A2 2 0 008.586 1H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd" />
+                </svg>
+                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">PDF, DOC, DOCX (MAX. 10MB)</p>
+              </div>
+            </label>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">You can upload multiple files if needed</p>
+          
+          {% if event.supporting_documents.all %}
+          <div class="file-preview-container mt-2">
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Current documents:</p>
+            {% for doc in event.supporting_documents.all %}
+              <div class="file-preview-item flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                </svg>
+                {{ doc.filename }}
+              </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        
+        <div class="modal-footer flex justify-end gap-4 mt-6">
+          <button type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600" onclick="window.location.href='{% url 'club_leader:calendar' %}'">
+            Cancel
+          </button>
+          <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            Update Event
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Location Picker Modal (Google Maps) -->
+  <div id="location-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg w-full max-w-2xl">
+      <!-- Search input -->
+      <input id="pac-input" class="form-control mb-2 w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" type="text" placeholder="Search for a location..." />
+
+      <!-- Map container -->
+      <div id="map" style="height: 400px; border-radius: 8px;"></div>
+
+      <!-- Buttons -->
+      <div class="mt-4 text-right">
+        <button class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600" onclick="closeLocationModal()">Cancel</button>
+        <button class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" onclick="confirmLocation()">Choose</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Maps JS -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&libraries=places,marker&language=en&v=weekly"></script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Handle file input display for image
+    const imageInput = document.getElementById('id_image');
+    if (imageInput) {
+      const imageLabel = imageInput.nextElementSibling;
+      const imageText = imageLabel.querySelector('.file-upload-text');
+      
+      imageInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+          imageText.textContent = this.files[0].name;
+        } else {
+          imageText.textContent = 'Choose an image file...';
+        }
+      });
+    }
+    
+    // Handle file input display for documents
+    const docsInput = document.getElementById('id_supporting_documents');
+    if (docsInput) {
+      const docsLabel = docsInput.nextElementSibling;
+      const docsText = docsLabel.querySelector('.file-upload-text');
+      
+      docsInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+          if (this.files.length === 1) {
+            docsText.textContent = this.files[0].name;
+          } else {
+            docsText.textContent = `${this.files.length} files selected`;
+          }
+        } else {
+          docsText.textContent = 'Upload supporting documents (PDF, DOC, etc.)';
+        }
+      });
+    }
+    
+    // Set minimum date to today for event date
+    const today = new Date().toISOString().split('T')[0];
+    const dateInput = document.getElementById('id_event_date');
+    if (dateInput) {
+      dateInput.min = today;
+    }
+    
+    // Handle image removal
+    const deleteBtn = document.querySelector('.delete-btn');
+
+    const currentImageContainer = document.querySelector('.current-image-container');
+    
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', function() {
+        // Add a hidden input to indicate image should be removed
+        const removeInput = document.createElement('input');
+        removeInput.type = 'hidden';
+        removeInput.name = 'remove_image';
+        removeInput.value = 'true';
+        document.querySelector('form').appendChild(removeInput);
+        
+        // Hide the current image container
+        currentImageContainer.style.display = 'none';
+      });
+      
+    
+    }
+  });
+  </script>
+  <script>
+    let map, marker, selectedPlace = null;
+    let mapInitialized = false;
+
+    function openLocationModal() {
+      document.getElementById("location-modal").classList.remove("hidden");
+
+      if (!mapInitialized) {
+        initMapPicker();
+        mapInitialized = true;
+      } else if (selectedPlace) {
+        document.getElementById("pac-input").value = selectedPlace.name;
+      }
+    }
+
+    function closeLocationModal() {
+      document.getElementById("location-modal").classList.add("hidden");
+    }
+
+    function confirmLocation() {
+      if (selectedPlace) {
+        document.getElementById("location_picker").value = selectedPlace.name;
+        document.getElementById("id_location_name").value = selectedPlace.name;
+        document.getElementById("id_latitude").value = selectedPlace.lat;
+        document.getElementById("id_longitude").value = selectedPlace.lng;
+        closeLocationModal();
+      }
+    }
+
+    function initMapPicker() {
+      const latInput = document.getElementById("id_latitude");
+      const lngInput = document.getElementById("id_longitude");
+      const nameInput = document.getElementById("id_location_name");
+
+      const defaultLat = parseFloat(latInput.value) || 36.2021;
+      const defaultLng = parseFloat(lngInput.value) || 37.1343;
+      const initialName = nameInput.value || "Selected Location";
+
+      const mapElement = document.getElementById("map");
+      const input = document.getElementById("pac-input");
+      const geocoder = new google.maps.Geocoder();
+
+      map = new google.maps.Map(mapElement, {
+        center: { lat: defaultLat, lng: defaultLng },
+        zoom: 13,
+        mapTypeControl: false,
+      });
+
+      marker = new google.maps.Marker({
+        position: { lat: defaultLat, lng: defaultLng },
+        map: map,
+        draggable: true,
+        visible: true,
+      });
+
+      selectedPlace = {
+        name: initialName,
+        lat: defaultLat.toFixed(6),
+        lng: defaultLng.toFixed(6),
+      };
+
+      input.value = initialName;
+
+      const autocomplete = new google.maps.places.Autocomplete(input);
+      autocomplete.bindTo("bounds", map);
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry || !place.geometry.location) {
+          alert("No location found.");
+          return;
+        }
+
+        const location = place.geometry.location;
+        map.setCenter(location);
+        map.setZoom(17);
+        marker.setPosition(location);
+        marker.setVisible(true);
+
+        selectedPlace = {
+          name: place.formatted_address || place.name || "Selected Location",
+          lat: location.lat().toFixed(6),
+          lng: location.lng().toFixed(6),
+        };
+      });
+
+      map.addListener("click", (e) => {
+        marker.setPosition(e.latLng);
+        marker.setVisible(true);
+        map.panTo(e.latLng);
+
+        geocoder.geocode({ location: e.latLng }, (results, status) => {
+          if (status === "OK" && results[0]) {
+            const address = results[0].formatted_address;
+            input.value = address;
+            selectedPlace = {
+              name: address,
+              lat: e.latLng.lat().toFixed(6),
+              lng: e.latLng.lng().toFixed(6),
+            };
+          } else {
+            selectedPlace = {
+              name: "Custom Pin",
+              lat: e.latLng.lat().toFixed(6),
+              lng: e.latLng.lng().toFixed(6),
+            };
+          }
+        });
+      });
+
+      marker.addListener("dragend", (e) => {
+        geocoder.geocode({ location: e.latLng }, (results, status) => {
+          if (status === "OK" && results[0]) {
+            const address = results[0].formatted_address;
+            input.value = address;
+            selectedPlace = {
+              name: address,
+              lat: e.latLng.lat().toFixed(6),
+              lng: e.latLng.lng().toFixed(6),
+            };
+          } else {
+            selectedPlace = {
+              name: "Dragged Pin",
+              lat: e.latLng.lat().toFixed(6),
+              lng: e.latLng.lng().toFixed(6),
+            };
+          }
+        });
+      });
+    }
+  </script>
+
+{% endblock %}

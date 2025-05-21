@@ -1,0 +1,596 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+
+<div class="p-6">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">{% trans "All Events" %}</h1>
+    <a href="{% url 'activity_center_admin:event_create' %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+      + {% trans "Add New Event" %}
+    </a>
+  </div>
+
+  {% if events %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for event in events %}
+        <div class="bg-white shadow-md rounded-lg p-5 border border-gray-200 hover:shadow-lg transition">
+          <h2 class="text-lg font-semibold text-blue-700 mb-1">{{ event.title }}</h2>
+          <p class="text-sm text-gray-600 mb-2">
+            {{ event.participants|truncatewords:20 }}
+          </p>
+
+          <ul class="text-sm text-gray-700 space-y-1 mb-3">
+            <li><strong>{% trans "Date" %}:</strong> {{ event.event_date|date:"Y-m-d H:i" }}</li>
+            <li><strong>{% trans "Club" %}:</strong> {{ event.club.name }}</li>
+            <li><strong>{% trans "Status" %}:</strong> 
+              <span class="capitalize {% if event.approval_status == 'approved' %}text-green-600{% elif event.approval_status == 'rejected' %}text-red-600{% else %}text-yellow-600{% endif %}">
+                {{ event.display_status }}
+              </span>
+            </li>
+              {% if event.latitude and event.longitude %}
+    <li>
+      <strong>{% trans "Location" %}:</strong>
+      <a href="https://www.google.com/maps?q={{ event.latitude }},{{ event.longitude }}"
+         target="_blank"
+         class="text-blue-600 hover:underline ml-1">
+         📍 {{ event.location_name|default:"View on Google Maps" }}
+      </a>
+    </li>
+  {% endif %}
+
+            {% if event.transportation_request %}
+              <li class="text-blue-500 font-medium">🚐 {% trans "Transportation Requested" %}</li>
+            {% endif %}
+          </ul>
+
+          <div class="flex flex-wrap gap-3 mt-4">
+            <a href="{% url 'activity_center_admin:event_update' event.id %}" class="text-yellow-500 hover:text-yellow-600 font-medium">
+              <i class="fas fa-edit mr-1"></i>{% trans "Edit" %}
+            </a>
+
+            <a href="{% url 'activity_center_admin:event_approve' event.id %}" class="text-green-600 hover:text-green-700 font-medium">
+              ✅ {% trans "Approve" %}
+            </a>
+            <a href="{% url 'activity_center_admin:event_reject' event.id %}" class="text-red-600 hover:text-red-700 font-medium">
+              ❌ {% trans "Reject" %}
+            </a>
+            <a href="{% url 'activity_center_admin:schedule_meeting' event.id %}" class="text-blue-600 hover:text-blue-700 font-medium">
+              📅 {% trans "Schedule Meeting" %}
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-gray-500 mt-6 text-center">{% trans "No events available." %}</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+
+<style>
+  /* Modal Styles */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.active {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .modal-container {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: all 0.1s ease-out;
+  }
+
+  .modal-overlay.active .modal-container {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  @keyframes fadeIn {
+    from {
+      background-color: rgba(15, 23, 42, 0);
+      backdrop-filter: blur(0);
+    }
+    to {
+      background-color: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+    }
+  }
+
+  .modal-header {
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: var(--transition);
+    padding: 0.25rem;
+    line-height: 1;
+  }
+
+  .modal-close:hover {
+    color: var(--danger-color);
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+  }
+
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: var(--border-light);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--primary-dark);
+  }
+</style>
+
+<!-- FOLDER-STYLE TABS CONTAINER -->
+<div class="relative mt-6">
+  <!-- FOLDER TABS -->
+  <div class="flex">
+    <button class="relative px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 z-10" 
+            id="all-tab" data-tabs-target="#all-events" type="button" role="tab" aria-controls="all-events" aria-selected="true">
+      <span>{% trans "All Events" %}</span>
+    </button>
+    
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="pending-tab" data-tabs-target="#pending-events" type="button" role="tab" aria-controls="pending-events" aria-selected="false">
+      <span>{% trans "Pending Events" %}</span>
+    </button>
+    
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="approved-tab" data-tabs-target="#approved-events" type="button" role="tab" aria-controls="approved-events" aria-selected="false">
+      <span>{% trans "Approved Events" %}</span>
+    </button>
+
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="declined-tab" data-tabs-target="#declined-events" type="button" role="tab" aria-controls="declined-events" aria-selected="false">
+      <span>{% trans "Declined Events" %}</span>
+    </button>
+  </div>
+  
+  <!-- FOLDER CONTENT AREA -->
+  <div class="relative bg-white dark:bg-gray-800 rounded-b-lg rounded-tr-lg shadow-md overflow-hidden p-6">
+    <!-- ALL EVENTS TAB -->
+    <div id="all-events" role="tabpanel" aria-labelledby="all-tab">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">{% trans "All Events" %}</h1>
+        <a href="{% url 'activity_center_admin:event_create' %}" class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 focus:outline-none dark:focus:ring-green-800">
+          + {% trans "Add New Event" %}
+        </a>
+      </div>
+
+      {% if events %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {% for event in events %}
+            <div onclick="openEventModal('{{ event.id }}')" class="bg-white dark:bg-gray-700 shadow-md rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 hover:shadow-lg transition cursor-pointer">
+              {% if event.image %}
+                <img src="{{ event.image.url }}" alt="{{ event.title }}" class="w-full h-48 object-cover">
+              {% else %}
+                <div class="w-full h-48 bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                  <i class="fas fa-calendar-alt text-4xl text-gray-400 dark:text-gray-300"></i>
+                </div>
+              {% endif %}
+              
+              <div class="p-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ event.title }}</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">
+                  {{ event.participants }}
+                </p>
+
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="event.stopPropagation(); window.location.href='{% url 'activity_center_admin:event_update' event.id %}'" 
+                          class="text-yellow-500 hover:text-white border border-yellow-500 hover:bg-yellow-500 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-yellow-300 dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-400 dark:focus:ring-yellow-900">
+                    <i class="fas fa-edit mr-1"></i>{% trans "Edit" %}
+                  </button>
+
+                  {% if event.approval_status != 'approved' %}
+                  <button onclick="event.stopPropagation(); window.location.href='{% url 'activity_center_admin:event_approve' event.id %}'" 
+                          class="text-green-600 hover:text-white border border-green-600 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-green-500 dark:text-green-500 dark:hover:text-white dark:hover:bg-green-600 dark:focus:ring-green-800">
+                    <i class="fas fa-check mr-1"></i>{% trans "Approve" %}
+                  </button>
+                  {% endif %}
+
+                  {% if event.approval_status != 'rejected' %}
+                  <button onclick="event.stopPropagation(); window.location.href='{% url 'activity_center_admin:event_reject' event.id %}'" 
+                          class="text-red-600 hover:text-white border border-red-600 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
+                    <i class="fas fa-times mr-1"></i>{% trans "Reject" %}
+                  </button>
+                  {% endif %}
+
+                  <button onclick="event.stopPropagation(); window.location.href='{% url 'activity_center_admin:schedule_meeting' event.id %}'" 
+                          class="text-blue-600 hover:text-white border border-blue-600 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800">
+                    <i class="fas fa-calendar mr-1"></i>{% trans "Meeting" %}
+                  </button>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-gray-500 dark:text-gray-400 mt-6 text-center">{% trans "No events available." %}</p>
+      {% endif %}
+    </div>
+
+    <!-- PENDING EVENTS TAB -->
+    <div class="hidden opacity-0" id="pending-events" role="tabpanel" aria-labelledby="pending-tab">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">{% trans "Pending Events" %}</h1>
+      </div>
+
+      {% if pending_events %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {% for event in pending_events %}
+            <div onclick="openEventModal('{{ event.id }}')" class="bg-white dark:bg-gray-700 shadow-md rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 hover:shadow-lg transition cursor-pointer">
+              {% if event.image %}
+                <img src="{{ event.image.url }}" alt="{{ event.title }}" class="w-full h-48 object-cover">
+              {% else %}
+                <div class="w-full h-48 bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                  <i class="fas fa-calendar-alt text-4xl text-gray-400 dark:text-gray-300"></i>
+                </div>
+              {% endif %}
+              
+              <div class="p-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ event.title }}</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">
+                  {{ event.participants }}
+                </p>
+
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="event.stopPropagation(); window.location.href='{% url 'activity_center_admin:event_update' event.id %}'" 
+                          class="text-yellow-500 hover:text-white border border-yellow-500 hover:bg-yellow-500 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-yellow-300 dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-400 dark:focus:ring-yellow-900">
+                    <i class="fas fa-edit mr-1"></i>{% trans "Edit" %}
+                  </button>
+
+                  <button onclick="event.stopPropagation(); window.location.href='{% url 'activity_center_admin:event_approve' event.id %}'" 
+                          class="text-green-600 hover:text-white border border-green-600 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-green-500 dark:text-green-500 dark:hover:text-white dark:hover:bg-green-600 dark:focus:ring-green-800">
+                    <i class="fas fa-check mr-1"></i>{% trans "Approve" %}
+                  </button>
+
+                  <button onclick="event.stopPropagation(); window.location.href='{% url 'activity_center_admin:event_reject' event.id %}'" 
+                          class="text-red-600 hover:text-white border border-red-600 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
+                    <i class="fas fa-times mr-1"></i>{% trans "Reject" %}
+                  </button>
+
+                  <button onclick="event.stopPropagation(); window.location.href='{% url 'activity_center_admin:schedule_meeting' event.id %}'" 
+                          class="text-blue-600 hover:text-white border border-blue-600 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800">
+                    <i class="fas fa-calendar mr-1"></i>{% trans "Meeting" %}
+                  </button>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-gray-500 dark:text-gray-400 mt-6 text-center">{% trans "No pending events available." %}</p>
+      {% endif %}
+    </div>
+
+    <!-- APPROVED EVENTS TAB -->
+    <div class="hidden opacity-0" id="approved-events" role="tabpanel" aria-labelledby="approved-tab">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">{% trans "Approved Events" %}</h1>
+      </div>
+
+      {% if approved_events %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {% for event in approved_events %}
+            <div onclick="openEventModal('{{ event.id }}')" class="bg-white dark:bg-gray-700 shadow-md rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 hover:shadow-lg transition cursor-pointer">
+              {% if event.image %}
+                <img src="{{ event.image.url }}" alt="{{ event.title }}" class="w-full h-48 object-cover">
+              {% else %}
+                <div class="w-full h-48 bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                  <i class="fas fa-calendar-alt text-4xl text-gray-400 dark:text-gray-300"></i>
+                </div>
+              {% endif %}
+              
+              <div class="p-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ event.title }}</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">
+                  {{ event.participants }}
+                </p>
+
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="event.stopPropagation(); window.location.href='{% url 'activity_center_admin:event_update' event.id %}'" 
+                          class="text-yellow-500 hover:text-white border border-yellow-500 hover:bg-yellow-500 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-yellow-300 dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-400 dark:focus:ring-yellow-900">
+                    <i class="fas fa-edit mr-1"></i>{% trans "Edit" %}
+                  </button>
+
+                  <button onclick="event.stopPropagation(); window.location.href='{% url 'activity_center_admin:schedule_meeting' event.id %}'" 
+                          class="text-blue-600 hover:text-white border border-blue-600 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800">
+                    <i class="fas fa-calendar mr-1"></i>{% trans "Meeting" %}
+                  </button>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-gray-500 dark:text-gray-400 mt-6 text-center">{% trans "No approved events available." %}</p>
+      {% endif %}
+    </div>
+
+    <!-- DECLINED EVENTS TAB -->
+    <div class="hidden opacity-0" id="declined-events" role="tabpanel" aria-labelledby="declined-tab">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">{% trans "Declined Events" %}</h1>
+      </div>
+
+      {% if declined_events %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {% for event in declined_events %}
+            <div onclick="openEventModal('{{ event.id }}')" class="bg-white dark:bg-gray-700 shadow-md rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 hover:shadow-lg transition cursor-pointer">
+              {% if event.image %}
+                <img src="{{ event.image.url }}" alt="{{ event.title }}" class="w-full h-48 object-cover">
+              {% else %}
+                <div class="w-full h-48 bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                  <i class="fas fa-calendar-alt text-4xl text-gray-400 dark:text-gray-300"></i>
+                </div>
+              {% endif %}
+              
+              <div class="p-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ event.title }}</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">
+                  {{ event.participants }}
+                </p>
+
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="event.stopPropagation(); window.location.href='{% url 'activity_center_admin:event_update' event.id %}'" 
+                          class="text-yellow-500 hover:text-white border border-yellow-500 hover:bg-yellow-500 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-yellow-300 dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-400 dark:focus:ring-yellow-900">
+                    <i class="fas fa-edit mr-1"></i>{% trans "Edit" %}
+                  </button>
+
+                  <button onclick="event.stopPropagation(); window.location.href='{% url 'activity_center_admin:event_approve' event.id %}'" 
+                          class="text-green-600 hover:text-white border border-green-600 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-green-500 dark:text-green-500 dark:hover:text-white dark:hover:bg-green-600 dark:focus:ring-green-800">
+                    <i class="fas fa-check mr-1"></i>{% trans "Approve" %}
+                  </button>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-gray-500 dark:text-gray-400 mt-6 text-center">{% trans "No declined events available." %}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Event Details Modal -->
+<div id="event-modal" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 id="modal-title" class="modal-title"></h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="modal-image" class="w-full h-48 bg-gray-200 dark:bg-gray-600 rounded-lg mb-4 flex items-center justify-center">
+        <i class="fas fa-calendar-alt text-4xl text-gray-400 dark:text-gray-300"></i>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Date & Time:</p>
+          <p id="modal-date" class="text-sm text-gray-900 dark:text-white"></p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Club:</p>
+          <p id="modal-club" class="text-sm text-gray-900 dark:text-white"></p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Status:</p>
+          <p id="modal-status" class="text-sm"></p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Participants:</p>
+          <p id="modal-participants" class="text-sm text-gray-900 dark:text-white"></p>
+        </div>
+      </div>
+      
+      <div class="mb-4">
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Location:</p>
+        <p id="modal-location" class="text-sm text-gray-900 dark:text-white"></p>
+      </div>
+      
+      <div class="mb-4">
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Transportation:</p>
+        <p id="modal-transportation" class="text-sm text-gray-900 dark:text-white"></p>
+      </div>
+      
+      <div>
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Description:</p>
+        <p id="modal-description" class="text-sm text-gray-900 dark:text-white mt-1"></p>
+      </div>
+    </div>
+   
+  </div>
+</div>
+
+
+<script>
+  // Enhanced tab switching with animation
+  document.querySelectorAll('[role="tab"]').forEach(tab => {
+    tab.addEventListener('click', function() {
+      // Remove active class from all tabs
+      document.querySelectorAll('[role="tab"]').forEach(t => {
+        t.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white');
+        t.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+        t.classList.remove('z-10');
+        t.classList.add('z-0');
+      });
+      
+      // Add active class to clicked tab
+      this.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+      this.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white');
+      this.classList.remove('z-0');
+      this.classList.add('z-10');
+      
+      // Hide all content and reset opacity
+      document.querySelectorAll('[role="tabpanel"]').forEach(content => {
+        content.classList.add('hidden');
+        content.classList.add('opacity-0');
+      });
+      
+      // Show target content with fade-in
+      const target = document.querySelector(this.dataset.tabsTarget);
+      target.classList.remove('hidden');
+      setTimeout(() => {
+        target.classList.remove('opacity-0');
+      }, 10);
+    });
+  });
+
+  // Initialize first tab as active
+  document.querySelector('[role="tab"]').click();
+
+
+
+// Enhanced modal functions with smooth animation
+function openEventModal(eventId) {
+    // Find the clicked event card
+    const eventCard = document.querySelector(`[onclick="openEventModal('${eventId}')"]`);
+    if (!eventCard) return;
+    
+    // Get the modal elements
+    const modal = document.getElementById('event-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalImage = document.getElementById('modal-image');
+    const modalDate = document.getElementById('modal-date');
+    const modalClub = document.getElementById('modal-club');
+    const modalStatus = document.getElementById('modal-status');
+    const modalParticipants = document.getElementById('modal-participants');
+    const modalLocation = document.getElementById('modal-location');
+    const modalTransportation = document.getElementById('modal-transportation');
+    const modalDescription = document.getElementById('modal-description');
+    
+    // Extract data from the card
+    const title = eventCard.querySelector('h2').textContent;
+    const participants = eventCard.querySelector('p').textContent;
+    
+    // Set modal content
+    modalTitle.textContent = title;
+    modalParticipants.textContent = participants;
+    
+    // Set image if available
+    const img = eventCard.querySelector('img');
+    if (img) {
+      modalImage.innerHTML = '';
+      const newImg = document.createElement('img');
+      newImg.src = img.src;
+      newImg.alt = img.alt;
+      newImg.className = 'w-full h-48 object-cover rounded-lg';
+      modalImage.appendChild(newImg);
+    }
+    
+    // Set other details (in a real app, these would come from the server)
+    modalDate.textContent = '2023-11-15 14:00';
+    modalClub.textContent = 'Example Club';
+    modalStatus.textContent = 'Pending';
+    modalStatus.className = 'text-sm ' + (eventCard.querySelector('[onclick*="event_approve"]') ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400');
+    modalLocation.textContent = 'Main Campus, Building A';
+    modalTransportation.textContent = 'Bus requested';
+    modalDescription.textContent = 'This is a sample event description that would provide more details about the event.';
+    
+    // Show modal with smooth animation
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.classList.add('active');
+    }, 10);
+    document.body.classList.add('overflow-hidden');
+  }
+
+  function closeModal() {
+    const modal = document.getElementById('event-modal');
+    modal.classList.remove('active');
+    setTimeout(() => {
+      modal.style.display = 'none';
+      document.body.classList.remove('overflow-hidden');
+    }, 300);
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('event-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeModal();
+    }
+  });
+</script>
+
+{% endblock %}

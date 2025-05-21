@@ -1,0 +1,202 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+{% block content %}
+<div class="max-w-7xl mx-auto p-2 sm:p-4">
+  <div class="bg-white rounded-lg shadow dark:bg-gray-800 p-3 sm:p-6">
+    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
+      {% trans "Assign Leader for" %} {{ club.name }}
+    </h2>
+
+    <!-- Search Bar -->
+    <div class="mb-4 sm:mb-6">
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
+        <div class="flex-1">
+          <input type="text" id="searchInput" value="{{ search_query }}"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="{% trans 'Search by name or email...' %}">
+        </div>
+        <div id="searchSpinner" class="hidden self-center">
+          <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Members Table -->
+    <div id="membersTable" class="relative overflow-x-auto shadow-md sm:rounded-lg">
+      <div class="min-w-full inline-block align-middle">
+        <div class="overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+              <tr>
+                <th scope="col" class="px-3 sm:px-6 py-3">{% trans "Name" %}</th>
+                <th scope="col" class="px-3 sm:px-6 py-3">{% trans "Email" %}</th>
+                <th scope="col" class="px-3 sm:px-6 py-3">{% trans "Action" %}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              {% for member in members %}
+              <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ member.user.name }}</td>
+                <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ member.user.email }}</td>
+                <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm">
+                  <form method="post" class="inline" onsubmit="return confirm('{% trans 'Are you sure you want to assign' %} {{ member.user.name }} {% trans 'as the leader of' %} {{ club.name }}?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_id" value="{{ member.user.id }}">
+                    <button type="submit"
+                    class="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300 transition-all duration-200 ease-in-out">
+                      {% trans "Assign as Leader" %}
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr class="bg-white dark:bg-gray-800">
+                <td colspan="3" class="px-3 sm:px-6 py-4 text-center text-sm">
+                  {% trans "No members found" %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="mt-4 sm:mt-6 flex justify-center">
+      {% if members.paginator.num_pages > 1 %}
+      <nav class="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+        <!-- First Page -->
+        {% if members.number > 1 %}
+        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}"
+          class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:ring-gray-700 dark:hover:bg-gray-700 dark:text-gray-300 focus:z-20 focus:outline-offset-0">
+          <span class="sr-only">{% trans "First" %}</span>
+          <svg class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+          <svg class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+        </a>
+        {% endif %}
+
+        <!-- Previous Page -->
+        {% if members.has_previous %}
+        <a href="?page={{ members.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+          class="relative inline-flex items-center px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:ring-gray-700 dark:hover:bg-gray-700 dark:text-gray-300 focus:z-20 focus:outline-offset-0">
+          <span class="sr-only">{% trans "Previous" %}</span>
+          <svg class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+          </svg>
+        </a>
+        {% endif %}
+
+        <!-- Current Page -->
+        <span class="relative inline-flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 dark:text-gray-300 focus:z-20 focus:outline-offset-0">
+          {% trans "Page" %} {{ members.number }} {% trans "of" %} {{ members.paginator.num_pages }}
+        </span>
+
+        <!-- Next Page -->
+        {% if members.has_next %}
+        <a href="?page={{ members.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+          class="relative inline-flex items-center px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:ring-gray-700 dark:hover:bg-gray-700 dark:text-gray-300 focus:z-20 focus:outline-offset-0">
+          <span class="sr-only">{% trans "Next" %}</span>
+          <svg class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+          </svg>
+        </a>
+        {% endif %}
+
+        <!-- Last Page -->
+        {% if members.number < members.paginator.num_pages %}
+        <a href="?page={{ members.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}"
+          class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:ring-gray-700 dark:hover:bg-gray-700 dark:text-gray-300 focus:z-20 focus:outline-offset-0">
+          <span class="sr-only">{% trans "Last" %}</span>
+          <svg class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+          </svg>
+          <svg class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+          </svg>
+        </a>
+        {% endif %}
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+let searchTimeout;
+const searchInput = document.getElementById('searchInput');
+const searchSpinner = document.getElementById('searchSpinner');
+const membersTable = document.getElementById('membersTable');
+const pagination = document.getElementById('pagination');
+
+function updateTable(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  membersTable.innerHTML = doc.getElementById('membersTable').innerHTML;
+  pagination.innerHTML = doc.getElementById('pagination').innerHTML;
+}
+
+function performSearch() {
+  const searchQuery = searchInput.value;
+  searchSpinner.classList.remove('hidden');
+  
+  fetch(`?search=${encodeURIComponent(searchQuery)}&ajax=true`, {
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(response => response.text())
+  .then(html => {
+    updateTable(html);
+    searchSpinner.classList.add('hidden');
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    searchSpinner.classList.add('hidden');
+  });
+}
+
+searchInput.addEventListener('input', function() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(performSearch, 300); // 300ms delay
+});
+
+// Handle pagination clicks
+document.addEventListener('click', function(e) {
+  if (e.target.closest('a[href^="?page="]')) {
+    e.preventDefault();
+    const href = e.target.closest('a').href;
+    const url = new URL(href);
+    const searchQuery = searchInput.value;
+    
+    if (searchQuery) {
+      url.searchParams.set('search', searchQuery);
+    }
+    url.searchParams.set('ajax', 'true');
+    
+    searchSpinner.classList.remove('hidden');
+    fetch(url.toString(), {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.text())
+    .then(html => {
+      updateTable(html);
+      searchSpinner.classList.add('hidden');
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      searchSpinner.classList.add('hidden');
+    });
+  }
+});
+</script>
+{% endblock %}

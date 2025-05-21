@@ -1,0 +1,1933 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+{% block breadcrumbs %}
+<nav class="flex text-sm" aria-label="Breadcrumb">
+  <ol class="inline-flex items-center space-x-1 md:space-x-3">
+    <li class="inline-flex items-center">
+      <span class="text-gray-700 dark:text-gray-300">Admin</span>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd"
+            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z"
+            clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'club_member:dashboard' %}" class="ml-1 text-blue-600 hover:underline dark:text-blue-400">
+          Manage Events
+        </a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+<!-- FullCalendar Styles & Scripts -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales-all.min.js"></script>
+<style>
+
+  #calendar {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 650px;
+  }
+  
+  .fc .fc-view-harness {
+    flex: 1;
+    min-height: 600px;
+  }
+  
+  .fc .fc-daygrid-body {
+    min-height: 20px;
+  }
+  
+  .fc .fc-daygrid-day-frame {
+    min-height: 120px;
+    height: 100%;
+  }
+  
+  .fc .fc-scroller-liquid-absolute {
+    overflow: hidden !important;
+  }
+  
+  .fc {
+    --fc-border-color: #e2e8f0;
+    --fc-daygrid-day-bg-color: #ffffff;
+    --fc-neutral-bg-color: #f8fafc;
+    --fc-page-bg-color: #ffffff;
+    --fc-today-bg-color: #f1f5f9;
+    --fc-event-bg-color: var(--primary-dark);
+    --fc-event-border-color: var(--primary-color);
+    font-family: inherit;
+  }
+  
+  .dark .fc {
+    --fc-border-color: #374151;
+    --fc-daygrid-day-bg-color: #1f2937;
+    --fc-neutral-bg-color: #111827;
+    --fc-page-bg-color: #1f2937;
+    --fc-today-bg-color: #374151;
+    --fc-event-bg-color: var(--primary-dark);
+    --fc-event-border-color: var(--primary-color);
+  }
+  
+  .fc .fc-toolbar.fc-header-toolbar {
+    margin-bottom: 1.5rem;
+  }
+  
+  .fc .fc-toolbar-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+  
+  .dark .fc .fc-toolbar-title {
+    color: #e5e7eb;
+  }
+  
+  .fc .fc-button {
+    background: transparent;
+    border: var(--border-light);
+    color: var(--text-light);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: var(--transition);
+  }
+  
+  .dark .fc .fc-button {
+    background: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+  }
+  
+  .fc .fc-button:hover {
+    background: #f1f5f9;
+    color: var(--primary-dark);
+    border-color: #cbd5e1;
+  }
+  
+  .dark .fc .fc-button:hover {
+    background: #4b5563;
+    color: #ffffff;
+    border-color: #6b7280;
+  }
+  
+  .fc .fc-button-primary:not(:disabled).fc-button-active {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border-color: var(--primary-light);
+  }
+  
+  .dark .fc .fc-button-primary:not(:disabled).fc-button-active {
+    background: var(--primary-dark);
+    color: #ffffff;
+    border-color: var(--primary-color);
+  }
+  
+  .fc .fc-button-primary:focus {
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+  }
+  
+  .fc-daygrid-day-top {
+    justify-content: center;
+    padding-top: 4px;
+  }
+  
+  .fc-daygrid-day-number {
+    color: var(--text-light);
+    font-weight: 500;
+    font-size: 0.8125rem;
+    padding: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: var(--transition);
+  }
+  
+  .dark .fc-daygrid-day-number {
+    color: #9ca3af;
+  }
+  
+  .fc-day-today .fc-daygrid-day-number {
+    color: var(--primary-color);
+    background: var(--primary-light);
+  }
+  
+  .dark .fc-day-today .fc-daygrid-day-number {
+    color: #ffffff;
+    background: var(--primary-dark);
+  }
+  
+  .fc-col-header-cell-cushion {
+    color: var(--text-light);
+    font-weight: 500;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .dark .fc-col-header-cell-cushion {
+    color: #9ca3af;
+  }
+  
+  .fc-event {
+    border-radius: 6px;
+    padding: 2px 4px;
+    font-size: 0.75rem;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 2px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .dark .fc-event {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+  
+  .fc-event:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dark .fc-event:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Modal Styles */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+  }
+  
+  .modal-container {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalFadeIn 0.3s ease-out;
+  }
+  
+  .dark .modal-container {
+    background-color: #1f2937;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  }
+  
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .modal-header {
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+  }
+  
+  .dark .modal-title {
+    color: #e5e7eb;
+  }
+  
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: var(--transition);
+    padding: 0.25rem;
+    line-height: 1;
+  }
+  
+  .dark .modal-close {
+    color: #9ca3af;
+  }
+  
+  .modal-close:hover {
+    color: var(--danger-color);
+  }
+  
+  .dark .modal-close:hover {
+    color: #ef4444;
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: var(--border-light);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+  
+  /* Form Styles */
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: var(--border-light);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: var(--transition);
+    background-color: white;
+    color: var(--text-color);
+  }
+  
+  .dark .form-control {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+  }
+  
+  .form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  }
+  
+  .dark .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+  }
+  
+  .form-control::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+  }
+  
+  .dark .form-control::placeholder {
+    color: #6b7280;
+  }
+  
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  
+  .btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--primary-dark);
+  }
+  
+  .btn-secondary {
+    background-color: white;
+    color: var(--text-color);
+    border-color: var(--border-light);
+  }
+  
+  .btn-secondary:hover {
+    background-color: #f8fafc;
+  }
+  
+  /* Add Event Button */
+  .add-event-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .add-event-btn:hover {
+    background-color: var(--primary-dark);
+  }
+  
+  .selected-date-display {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #f8fafc;
+    border-radius: 6px;
+    text-align: center;
+  }
+  
+  .dark .selected-date-display {
+    background-color: #374151;
+    color: #9ca3af;
+  }
+  
+  .selected-date-display strong {
+    color: var(--primary-color);
+  }
+  
+  .dark .selected-date-display strong {
+    color: var(--primary-light);
+  }
+  
+  /* Add these styles to your existing CSS */
+  .file-upload-wrapper {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+  
+  .file-upload-input {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+  
+  .file-upload-label {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: white;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    color: var(--text-light);
+    transition: var(--transition);
+    cursor: pointer;
+  }
+  
+  .dark .file-upload-label {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #9ca3af;
+  }
+  
+  .file-upload-label:hover {
+    border-color: var(--primary-color);
+    background-color: #f8fafc;
+  }
+  
+  .dark .file-upload-label:hover {
+    border-color: var(--primary-color);
+    background-color: #4b5563;
+  }
+  
+  .file-upload-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364758b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    padding-right: 2.5rem;
+  }
+  
+  textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+  }
+  
+  .relative {
+    position: relative;
+  }
+  
+  .currency-symbol {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+    font-weight: 500;
+  }
+  
+  .with-currency {
+    padding-left: 2.5rem;
+  }
+  
+  /* Required field indicator */
+  .form-label:after {
+    content: ' *';
+    color: var(--danger-color);
+    opacity: 0;
+  }
+  
+  .form-label[required]:after {
+    opacity: 1;
+  }
+  
+  
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .approved {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+  }
+  
+  .pending {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+  }
+  
+  .rejected {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color);
+  }
+  .pac-container {
+    z-index: 99999 !important;
+    position: absolute !important;
+  }
+  
+  /* Calendar Container */
+  .calendar-container {
+    background-color: var(--calendar-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border: var(--border-light);
+  }
+  
+  .dark .calendar-container {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+  
+  /* Upcoming Events Section */
+  .upcoming-events {
+    background-color: var(--sidebar-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border: var(--border-light);
+  }
+  
+  .dark .upcoming-events {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+  
+  .event-card {
+    background-color: white;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-shadow: var(--box-shadow);
+    border: var(--border-light);
+  }
+  
+  .dark .event-card {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .event-card h3 {
+    color: var(--text-color);
+  }
+  
+  .dark .event-card h3 {
+    color: #e5e7eb;
+  }
+  
+  .event-card p {
+    color: var(--text-light);
+  }
+  
+  .dark .event-card p {
+    color: #9ca3af;
+  }
+  
+  /* Location Modal */
+  #location-modal .bg-white {
+    background-color: white;
+  }
+  
+  .dark #location-modal .bg-white {
+    background-color: #1f2937;
+  }
+  
+  #location-modal input {
+    background-color: white;
+    color: var(--text-color);
+  }
+  
+  .dark #location-modal input {
+    background-color: #374151;
+    color: #e5e7eb;
+  }
+  
+  /* Base responsive styles */
+  .events-calendar {
+    padding: 1rem;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  @media (max-width: 1024px) {
+    .events-calendar {
+      padding: 0.75rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .events-calendar {
+      padding: 0.5rem;
+    }
+  }
+  
+  /* Calendar container responsive styles */
+  .calendar-container {
+    min-height: 500px;
+  }
+  
+  @media (max-width: 768px) {
+    .calendar-container {
+      min-height: 400px;
+    }
+  }
+  
+  /* Calendar header responsive styles */
+  .calendar-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  @media (min-width: 640px) {
+    .calendar-header {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+  
+  /* Calendar view responsive styles */
+  #calendar {
+    min-height: 500px;
+  }
+  
+  @media (max-width: 768px) {
+    #calendar {
+      min-height: 400px;
+    }
+    
+    .fc .fc-toolbar {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .fc .fc-toolbar-chunk {
+      display: flex;
+      gap: 0.5rem;
+    }
+  }
+  
+  /* Upcoming events responsive styles */
+  .upcoming-events {
+    height: auto;
+    max-height: none;
+  }
+  
+  @media (max-width: 1024px) {
+    .upcoming-events {
+      margin-top: 1rem;
+    }
+  }
+  
+  /* Event card responsive styles */
+  .event-card {
+    width: 100%;
+  }
+  
+  /* Modal responsive styles */
+  .modal-container {
+    width: 95%;
+    max-width: 500px;
+    margin: 1rem;
+  }
+  
+  @media (max-width: 640px) {
+    .modal-container {
+      width: 100%;
+      margin: 0.5rem;
+    }
+    
+    .modal-header {
+      padding: 1rem;
+    }
+    
+    .modal-body {
+      padding: 1rem;
+    }
+    
+    .modal-footer {
+      padding: 0.75rem 1rem;
+    }
+  }
+  
+  /* Form responsive styles */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  @media (max-width: 640px) {
+    .form-group {
+      margin-bottom: 0.75rem;
+    }
+    
+    .form-label {
+      font-size: 0.8125rem;
+    }
+    
+    .form-control {
+      font-size: 0.8125rem;
+      padding: 0.5rem 0.75rem;
+    }
+  }
+  
+  /* Location modal responsive styles */
+  #location-modal .bg-white {
+    width: 95%;
+    max-width: 600px;
+    margin: 1rem;
+  }
+  
+  @media (max-width: 640px) {
+    #location-modal .bg-white {
+      width: 100%;
+      margin: 0.5rem;
+      padding: 0.75rem;
+    }
+    
+    #map {
+      height: 300px;
+    }
+  }
+  
+  /* Alert responsive styles */
+  #custom-alert {
+    width: 95%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  @media (max-width: 640px) {
+    #custom-alert {
+      width: 100%;
+      margin: 0 0.5rem;
+    }
+  }
+  
+  /* Grid layout responsive styles */
+  .events-calendar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  @media (min-width: 1024px) {
+    .events-calendar {
+      grid-template-columns: 1fr 350px;
+    }
+  }
+  
+  /* Button responsive styles */
+  .add-event-btn {
+    width: 100%;
+  }
+  
+  @media (min-width: 640px) {
+    .add-event-btn {
+      width: auto;
+    }
+  }
+  
+  /* File upload responsive styles */
+  .file-upload-label {
+    padding: 0.5rem;
+  }
+  
+  @media (max-width: 640px) {
+    .file-upload-label {
+      padding: 0.375rem;
+    }
+    
+    .file-upload-text {
+      font-size: 0.75rem;
+    }
+  }
+  
+  /* Status badge responsive styles */
+  .status-badge {
+    font-size: 0.625rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  @media (min-width: 640px) {
+    .status-badge {
+      font-size: 0.6875rem;
+      padding: 0.25rem 0.75rem;
+    }
+  }
+  
+  </style>
+
+<!-- FOLDER-STYLE TABS CONTAINER -->
+<div class="relative mt-6">
+  <!-- FOLDER TABS -->
+  <div class="flex">
+    <button class="relative px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 z-10" 
+            id="calendar-tab" data-tabs-target="#calendar-content" type="button" role="tab" aria-controls="calendar-content" aria-selected="true">
+      <span>Calendar</span>
+    </button>
+    
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="pending-tab" data-tabs-target="#pending-events" type="button" role="tab" aria-controls="pending-events" aria-selected="false">
+      <span>Pending Events</span>
+    </button>
+    
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="approved-tab" data-tabs-target="#approved-events" type="button" role="tab" aria-controls="approved-events" aria-selected="false">
+      <span>Approved Events</span>
+    </button>
+
+    <button class="relative px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-t-lg mr-1 transition-all duration-200 ease-in-out hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 z-0" 
+            id="declined-tab" data-tabs-target="#declined-events" type="button" role="tab" aria-controls="declined-events" aria-selected="false">
+      <span>Declined Events</span>
+    </button>
+  </div>
+  
+  <!-- FOLDER CONTENT AREA -->
+  <div class="relative bg-white dark:bg-gray-800 rounded-b-lg rounded-tr-lg shadow-md overflow-hidden">
+    <!-- CALENDAR TAB -->
+    <div class="p-6" id="calendar-content" role="tabpanel" aria-labelledby="calendar-tab">
+      <div class="events-calendar grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 p-6 max-w-[1400px] mx-auto">
+        <div id="custom-alert" class="hidden fixed top-4 right-4 w-full max-w-md z-[9999]">
+          <div id="alert-border-2" class="flex items-center p-4 text-red-800 border-t-4 border-red-300 bg-red-50 dark:text-red-400 dark:bg-gray-800 dark:border-red-800" role="alert">
+            <svg class="shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+            </svg>
+            <div class="ms-3 text-sm font-medium">
+              You cannot create events for past dates. Please select today or a future date.
+            </div>
+            <button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-red-50 text-red-500 rounded-lg focus:ring-2 focus:ring-red-400 p-1.5 hover:bg-red-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700" onclick="dismissAlert()" aria-label="Close">
+              <span class="sr-only">Dismiss</span>
+              <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+       
+        <div class="calendar-container bg-[var(--calendar-bg)] rounded-[var(--border-radius)] shadow-[var(--box-shadow)] border-[var(--border-light)] p-6">
+          <div class="calendar-header flex justify-between items-center mb-6">
+            <h1 class="text-xl font-semibold text-[var(--text-color)] dark:text-white">{% trans "Activity Center Calendar" %}</h1>
+            <button class="add-event-btn" onclick="openModal()">
+              <i class="fas fa-plus"></i> {% trans "Add Event" %}
+            </button>
+          </div>
+          
+          <div id="calendar" class="calendar-view min-h-[700px]"></div>
+        </div>
+      
+        <div class="upcoming-events bg-[var(--sidebar-bg)] rounded-[var(--border-radius)] shadow-[var(--box-shadow)] border-[var(--border-light)] p-6 h-fit">
+          <h2 class="text-xl text-[var(--text-color)] mb-5 pb-3 border-b-[var(--border-light)] font-semibold dark:text-white">Upcoming Events</h2>
+      
+          <div class="event-list flex flex-col gap-3">
+            {% for event in events %}
+              <div class="event-card bg-white rounded-xl p-4 shadow-[var(--box-shadow)] border-[var(--border-light)] hover:shadow-md hover:border-gray-300 transition">
+                <div class="event-header flex justify-between items-center mb-2">
+                  <h3 class="font-medium text-[var(--text-color)] text-[0.9375rem]">{{ event.title }}</h3>
+                  <span class="status-badge {{ event.approval_status }} px-2 py-1 rounded-full text-xs font-semibold uppercase">{{ event.approval_status|title }}</span>
+                </div>
+                <p class="text-[var(--text-light)] text-[0.8125rem]"><i class="far fa-calendar-alt"></i> {{ event.event_date|date:"F d, Y" }}</p>
+
+              </div>
+            {% empty %}
+              <div class="event-card bg-white rounded-xl p-4 shadow border">
+                <p class="text-[var(--text-light)] text-sm">No upcoming events scheduled.</p>
+              </div>
+            {% endfor %}
+          </div>
+      
+          <div class="view-all text-center mt-5 pt-4 border-t-[var(--border-light)]">
+            <a href="{% url 'activity_center_admin:aca_all_events' %}" class="text-[var(--primary-color)] text-sm font-medium hover:underline">
+              View All Events <i class="fas fa-chevron-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Event Modal -->
+      <div id="event-modal" class="modal-overlay">
+        <div class="modal-container">
+          <div class="modal-header">
+            <h3 class="modal-title">Create New Event</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div id="selected-date-display" class="selected-date-display">
+              <i class="far fa-calendar-alt"></i> Selected date: <strong id="display-date">None</strong>
+            </div>
+            
+              <form id="eventForm" method="post" action="{% url 'activity_center_admin:event_create' %}" enctype="multipart/form-data">
+              {% csrf_token %}
+              
+              <div class="form-group">
+                <label for="id_title" class="form-label">Event Title *</label>
+                <input type="text" name="title" id="id_title" class="form-control" placeholder="Enter event title" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="id_event_date" class="form-label">Date *</label>
+                <input type="date" name="event_date" id="id_event_date" class="form-control" required>
+              </div>
+      
+              <div class="form-group">
+                <label for="id_participants" class="form-label">Number of Participants *</label>
+                <input type="number" name="participants" id="id_participants" class="form-control" placeholder="Estimated number of participants" min="1" required>
+              </div>
+      
+                
+              <div class="form-group">
+                <label for="id_image" class="form-label">Event Image</label>
+                <div class="file-upload-wrapper">
+                  <input type="file" name="image" id="id_image" class="file-upload-input" accept="image/*">
+                  <label for="id_image" class="file-upload-label">
+                    <i class="fas fa-cloud-upload-alt mr-2"></i>
+                    <span class="file-upload-text">Choose an image file...</span>
+                  </label>
+                  <div id="image-preview" class="file-preview-container"></div>
+                </div>
+              </div>
+      
+              <div class="form-group">
+                <label for="id_needs" class="form-label">Event Needs *</label>
+                <textarea name="needs" id="id_needs" class="form-control" rows="3" placeholder="Describe what you need for the event (equipment, materials, etc.)" required></textarea>
+              </div>
+      
+              <div class="form-group">
+                <label for="id_total_cost" class="form-label">Estimated Total Cost TL</label>
+                <div class="relative">
+                  <span class="currency-symbol">TL</span>
+                  <input type="number" name="total_cost" id="id_total_cost" class="form-control with-currency" placeholder="0.00" min="0" step="0.01" required>
+                </div>
+              </div>
+      
+              <div class="form-group">
+                <label for="id_transportation_request" class="form-label">Transportation Request</label>
+                <select name="transportation_request" id="id_transportation_request" class="form-control">
+                  <option value="none">No transportation needed</option>
+                  <option value="van">Van</option>
+                  <option value="bus">Bus</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="location_picker" class="form-label">Event Location *</label>
+                <input type="text" id="location_picker" class="form-control" placeholder="Search location..." readonly onclick="openLocationModal()">
+                <input type="hidden" name="location_name" id="id_location_name">
+                <input type="hidden" name="latitude" id="id_latitude">
+                <input type="hidden" name="longitude" id="id_longitude">
+              </div>
+              
+              <div class="form-group">
+                <label for="id_supporting_documents" class="form-label">Supporting Documents</label>
+                <div class="file-upload-wrapper">
+                  <input type="file" name="supporting_documents" id="id_supporting_documents" class="file-upload-input" multiple>
+                  <label for="id_supporting_documents" class="file-upload-label">
+                    <i class="fas fa-file-upload mr-2"></i>
+                    <span class="file-upload-text">Upload supporting documents (PDF, DOC, etc.)</span>
+                  </label>
+                  <div id="documents-preview" class="file-preview-container"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">You can upload multiple files if needed</p>
+              </div>
+              
+              <div id="modal-errors" class="text-red-500 text-sm mt-2"></div>
+              
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="far fa-save mr-2"></i> Submit Request
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Location Modal (Google Maps) -->
+      <div id="location-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-2xl">
+          <input id="pac-input" class="form-control mb-2 w-full" type="text" placeholder="Search for a location..." />
+          <div id="map" style="height: 400px; border-radius: 8px;"></div>
+          <div class="mt-4 text-right">
+            <button class="btn btn-secondary" onclick="closeLocationModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="confirmLocation()">Choose</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<!-- PENDING EVENTS TAB -->
+<div class="hidden p-6 opacity-0" id="pending-events" role="tabpanel" aria-labelledby="pending-tab">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">{% trans "Pending Events" %}</h1>
+  </div>
+
+  {% if pending_events %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for event in pending_events %}
+        <div onclick="openEventDetailModal({{ event.id }})"
+             class="bg-white dark:bg-gray-700 shadow-md rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 hover:shadow-lg transition cursor-pointer">
+          
+          {% if event.image %}
+            <img src="{{ event.image.url }}" alt="{{ event.title }}" class="w-full h-48 object-cover">
+          {% else %}
+            <div class="w-full h-48 bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+              <i class="fas fa-calendar-alt text-4xl text-gray-400 dark:text-gray-300"></i>
+            </div>
+          {% endif %}
+          
+          <div class="p-4">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ event.title }}</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">{{ event.participants }}</p>
+            <div class="mt-4">
+              <button class="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300 transition-all duration-200 ease-in-out">
+                <i class="fas fa-eye mr-1"></i>{% trans "View Details" %}
+              </button>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-gray-500 dark:text-gray-400 mt-6 text-center">{% trans "No events available." %}</p>
+  {% endif %}
+  <div class="mt-6 flex justify-center">
+    {% if pending_events.has_other_pages %}
+    <div class="inline-flex rounded-md shadow-sm" role="group">
+      {% if pending_events.has_previous %}
+        <a href="?pending_page=1" class="px-3 py-1 bg-white dark:bg-gray-800 border text-sm">First</a>
+        <a href="?pending_page={{ pending_events.previous_page_number }}" class="px-3 py-1 bg-white dark:bg-gray-800 border text-sm">Previous</a>
+      {% endif %}
+      <span class="px-3 py-1 border text-sm">Page {{ pending_events.number }} of {{ pending_events.paginator.num_pages }}</span>
+      {% if pending_events.has_next %}
+        <a href="?pending_page={{ pending_events.next_page_number }}" class="px-3 py-1 bg-white dark:bg-gray-800 border text-sm">Next</a>
+        <a href="?pending_page={{ pending_events.paginator.num_pages }}" class="px-3 py-1 bg-white dark:bg-gray-800 border text-sm">Last</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  
+</div>
+
+
+    <!-- APPROVED EVENTS TAB -->
+<div class="p-6 opacity-0 hidden" id="approved-events" role="tabpanel" aria-labelledby="approved-tab">
+  {% if approved_events %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for event in approved_events %}
+    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+      {% if event.club and event.club.image %}
+        <img class="w-full h-48 object-cover" src="{{ event.club.image.url }}" alt="{{ event.club.name }}" />
+      {% elif event.image %}
+        <img class="w-full h-48 object-cover" src="{{ event.image.url }}" alt="Event Image" />
+      {% else %}
+        <div class="w-full h-48 bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+          <i class="fas fa-calendar-alt text-4xl text-gray-400 dark:text-gray-300"></i>
+        </div>
+      {% endif %}
+
+      <div class="p-4">
+        <h5 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ event.title }}</h5>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2"><strong>Date:</strong> {{ event.event_date|date:"F d, Y" }}</p>
+        <div class="space-y-2 mt-3">
+          <p class="text-sm text-gray-600 dark:text-gray-300"><strong>Participants:</strong> {{ event.participants }}</p>
+          <p class="text-sm text-gray-600 dark:text-gray-300"><strong>Total Cost:</strong> TL{{ event.total_cost }}</p>
+        </div>
+        <div class="mt-4">
+          <a href="{% url 'activity_center_admin:event_update' event.id %}" class="inline-flex items-center px-3 py-1 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-full dark:bg-yellow-900 dark:text-yellow-300 transition-all duration-200 ease-in-out">
+            <i class="fas fa-edit mr-1"></i>{% trans "Edit Event" %}
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="text-sm text-gray-500 dark:text-gray-400">No approved events.</p>
+  {% endif %}
+  <div class="mt-6 flex justify-center">
+    {% if approved_events.has_other_pages %}
+    <div class="inline-flex rounded-md shadow-sm" role="group">
+      {% if approved_events.has_previous %}
+        <a href="?approved_page=1" class="px-3 py-1 bg-white dark:bg-gray-800 border text-sm">First</a>
+        <a href="?approved_page={{ approved_events.previous_page_number }}" class="px-3 py-1 bg-white dark:bg-gray-800 border text-sm">Previous</a>
+      {% endif %}
+      <span class="px-3 py-1 border text-sm">Page {{ approved_events.number }} of {{ approved_events.paginator.num_pages }}</span>
+      {% if approved_events.has_next %}
+        <a href="?approved_page={{ approved_events.next_page_number }}" class="px-3 py-1 bg-white dark:bg-gray-800 border text-sm">Next</a>
+        <a href="?approved_page={{ approved_events.paginator.num_pages }}" class="px-3 py-1 bg-white dark:bg-gray-800 border text-sm">Last</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  
+</div>
+
+
+    <!-- DECLINED EVENTS TAB -->
+<div class="p-6 opacity-0 hidden" id="declined-events" role="tabpanel" aria-labelledby="declined-tab">
+  {% if declined_events %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for event in declined_events %}
+    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+      {% if event.club and event.club.image %}
+        <img class="w-full h-48 object-cover" src="{{ event.club.image.url }}" alt="{{ event.club.name }}" />
+      {% elif event.image %}
+        <img class="w-full h-48 object-cover" src="{{ event.image.url }}" alt="Event Image" />
+      {% else %}
+        <div class="w-full h-48 bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+          <i class="fas fa-calendar-alt text-4xl text-gray-400 dark:text-gray-300"></i>
+        </div>
+      {% endif %}
+
+      <div class="p-4">
+        <h5 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ event.title }}</h5>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2"><strong>Date:</strong> {{ event.event_date|date:"F d, Y" }}</p>
+        <div class="space-y-2 mt-3">
+          <p class="text-sm text-gray-600 dark:text-gray-300"><strong>Participants:</strong> {{ event.participants }}</p>
+          <p class="text-sm text-gray-600 dark:text-gray-300"><strong>Total Cost:</strong> TL{{ event.total_cost }}</p>
+        </div>
+        <div class="mt-4">
+          <a href="{% url 'activity_center_admin:event_update' event.id %}" class="inline-flex items-center px-3 py-1 text-sm font-medium text-yellow-800 bg-yellow-100 rounded-full dark:bg-yellow-900 dark:text-yellow-300 transition-all duration-200 ease-in-out">
+            <i class="fas fa-edit mr-1"></i>{% trans "Edit Event" %}
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="text-sm text-gray-500 dark:text-gray-400">No declined events.</p>
+  {% endif %}
+  <div class="mt-6 flex justify-center">
+    {% if declined_events.has_other_pages %}
+    <div class="inline-flex rounded-md shadow-sm" role="group">
+      {% if declined_events.has_previous %}
+        <a href="?declined_page=1" class="px-3 py-1 bg-white dark:bg-gray-800 border text-sm">First</a>
+        <a href="?declined_page={{ declined_events.previous_page_number }}" class="px-3 py-1 bg-white dark:bg-gray-800 border text-sm">Previous</a>
+      {% endif %}
+      <span class="px-3 py-1 border text-sm">Page {{ declined_events.number }} of {{ declined_events.paginator.num_pages }}</span>
+      {% if declined_events.has_next %}
+        <a href="?declined_page={{ declined_events.next_page_number }}" class="px-3 py-1 bg-white dark:bg-gray-800 border text-sm">Next</a>
+        <a href="?declined_page={{ declined_events.paginator.num_pages }}" class="px-3 py-1 bg-white dark:bg-gray-800 border text-sm">Last</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  
+</div>
+  </div>
+</div>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&libraries=places&language=en&v=weekly"></script>
+
+
+<script>
+  // Enhanced tab switching with animation
+  document.querySelectorAll('[role="tab"]').forEach(tab => {
+    tab.addEventListener('click', function() {
+      // Remove active class from all tabs
+      document.querySelectorAll('[role="tab"]').forEach(t => {
+        t.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white');
+        t.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+        t.classList.remove('z-10');
+        t.classList.add('z-0');
+      });
+      
+      // Add active class to clicked tab
+      this.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+      this.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white');
+      this.classList.remove('z-0');
+      this.classList.add('z-10');
+      
+      // Hide all content and reset opacity
+      document.querySelectorAll('[role="tabpanel"]').forEach(content => {
+        content.classList.add('hidden');
+        content.classList.add('opacity-0');
+      });
+      
+      // Show target content with fade-in
+      const target = document.querySelector(this.dataset.tabsTarget);
+      target.classList.remove('hidden');
+      setTimeout(() => {
+        target.classList.remove('opacity-0');
+      }, 10);
+    });
+  });
+
+  // Initialize first tab as active
+  document.querySelector('[role="tab"]').click();
+
+  function filterTable(tableId, searchText) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    
+    const rows = table.getElementsByTagName("tr");
+    const searchLower = searchText.toLowerCase();
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const cells = row.getElementsByTagName("td");
+      let rowMatches = false;
+
+      for (let j = 0; j < cells.length; j++) {
+        const cellText = cells[j].textContent || cells[j].innerText;
+        if (cellText.toLowerCase().includes(searchLower)) {
+          rowMatches = true;
+          break;
+        }
+      }
+
+      row.style.display = rowMatches ? "" : "none";
+    }
+  }
+</script>
+
+<script>
+  function showAlert(message) {
+    const alertContainer = document.getElementById('custom-alert');
+    const alertMessage = document.querySelector('#alert-border-2 .ms-3');
+
+    if (alertContainer && alertMessage) {
+      alertMessage.textContent = message || 'You cannot create events for past dates.';
+      alertContainer.classList.remove('hidden');
+      setTimeout(dismissAlert, 5000);
+    }
+  }
+
+  function dismissAlert() {
+    const alertContainer = document.getElementById('custom-alert');
+    if (alertContainer) {
+      alertContainer.classList.add('hidden');
+    }
+  }
+
+  // Add this script to handle file input display
+  document.addEventListener('DOMContentLoaded', function() {
+    // Handle file input display for image
+    const imageInput = document.getElementById('id_image');
+    if (imageInput) {
+      const imageLabel = imageInput.nextElementSibling;
+      const imageText = imageLabel.querySelector('.file-upload-text');
+      
+      imageInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+          imageText.textContent = this.files[0].name;
+        } else {
+          imageText.textContent = 'Choose an image file...';
+        }
+      });
+    }
+    
+    // Handle file input display for documents
+    const docsInput = document.getElementById('id_supporting_documents');
+    if (docsInput) {
+      const docsLabel = docsInput.nextElementSibling;
+      const docsText = docsLabel.querySelector('.file-upload-text');
+      
+      docsInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+          if (this.files.length === 1) {
+            docsText.textContent = this.files[0].name;
+          } else {
+            docsText.textContent = `${this.files.length} files selected`;
+          }
+        } else {
+          docsText.textContent = 'Upload supporting documents (PDF, DOC, etc.)';
+        }
+      });
+    }
+    
+    // Set minimum date to today for event date
+    const today = new Date().toISOString().split('T')[0];
+    const dateInput = document.getElementById('id_event_date');
+    if (dateInput) {
+      dateInput.min = today;
+    }
+    
+    // If a date was selected from the calendar, it will be set in the openModal function
+  });
+
+  let selectedDate = null;
+  
+  function openModal(dateStr = null) {
+    const modal = document.getElementById("event-modal");
+    if (modal) {
+      modal.style.display = "flex";
+      
+      if (dateStr) {
+        selectedDate = dateStr;
+        updateDateDisplay(dateStr);
+        
+        // Set the date field value
+        const dateInput = document.querySelector("#id_event_date");
+        if (dateInput) {
+          dateInput.value = dateStr;
+        }
+      } else {
+        // Reset the display when opening via Add Event button
+        const displayDate = document.getElementById("display-date");
+        if (displayDate) {
+          displayDate.textContent = "None";
+        }
+        const dateInput = document.querySelector("#id_event_date");
+        if (dateInput) {
+          dateInput.value = ""; // Clear the date input
+        }
+      }
+    }
+  }
+
+  function closeModal() {
+    const modal = document.getElementById("event-modal");
+    if (modal) {
+      modal.style.display = "none";
+    }
+    selectedDate = null;
+    const displayDate = document.getElementById("display-date");
+    if (displayDate) {
+      displayDate.textContent = "None"; // Reset the display
+    }
+    
+    // Clear the date input field
+    const dateInput = document.querySelector("#id_event_date");
+    if (dateInput) {
+      dateInput.value = "";
+    }
+  }
+
+  function updateDateDisplay(dateStr) {
+    const dateDisplay = document.getElementById("display-date");
+    if (dateDisplay) {
+      const dateObj = new Date(dateStr);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      dateDisplay.textContent = formattedDate;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const calendarEl = document.getElementById("calendar");
+
+    if (calendarEl) {
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        height: "auto",
+        headerToolbar: {
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,timeGridWeek,timeGridDay"
+        },
+        locale: "en",
+        selectable: true,
+        editable: false,
+        events: "{% url 'activity_center_admin:get_all_approved_events' %}",
+        eventColor: "var(--primary-color)",
+        eventTextColor: "#fff",
+eventDidMount: function(info) {
+  // Set event color based on approval status
+  if (info.event.extendedProps.approval_status === 'pending') {
+    if (info.event.extendedProps.rescheduled === true || info.event.title.includes("Meeting Scheduled")) {
+      info.el.style.backgroundColor = "#facc15";
+      info.el.style.borderColor = "#facc15";
+    } else {
+      info.el.style.backgroundColor = 'var(--warning-color)';
+      info.el.style.borderColor = 'var(--warning-color)';
+    }
+  } else if (info.event.extendedProps.approval_status === 'approved') {
+    info.el.style.backgroundColor = 'var(--success-color)';
+    info.el.style.borderColor = 'var(--success-color)';
+  } else if (info.event.extendedProps.approval_status === 'rejected') {
+    info.el.style.backgroundColor = 'var(--danger-color)';
+    info.el.style.borderColor = 'var(--danger-color)';
+  } else if (info.event.extendedProps.approval_status === "meeting") {
+    info.el.style.backgroundColor = "#6366f1";
+  }
+
+  // 🔵 ACA-created events have no club_name — style them uniquely
+  if (!info.event.extendedProps.club_name) {
+    info.el.style.backgroundColor = "#3b82f6"; // Blue for ACA events
+    info.el.style.borderColor = "#3b82f6";
+    info.el.setAttribute("title", `ACA Event: ${info.event.title}`);
+  }
+
+  if (info.event.extendedProps.type === "meeting") {
+    info.el.setAttribute('title', 
+      `${info.event.title}
+      🏛 Club: ${info.event.extendedProps.club_name}
+      👤 Meeting with: ${info.event.extendedProps.leader_name}
+      🕒 Date & Time: ${info.event.extendedProps.datetime}
+      📋 Agenda: ${info.event.extendedProps.description}`
+    );
+  } else {
+    info.el.setAttribute('title', info.event.title);
+  }
+
+  // Hover animation
+  info.el.style.transition = 'all 0.2s ease';
+  info.el.addEventListener('mouseenter', () => {
+    info.el.style.transform = 'translateY(-2px)';
+    info.el.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+  });
+  info.el.addEventListener('mouseleave', () => {
+    info.el.style.transform = '';
+    info.el.style.boxShadow = '';
+  });
+},
+
+        dateClick: function(info) {
+          // Get current date without time
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          // Convert clicked date to Date object
+          const clickedDate = new Date(info.dateStr);
+          
+          // Compare dates
+          if (clickedDate < today) {
+            // Show alert for past date
+            showAlert();
+          } else {
+            // Open modal for today or future dates
+            openModal(info.dateStr);
+          }
+        },
+        views: {
+          timeGridWeek: {
+            allDaySlot: false,
+            slotMinTime: "00:00:00",
+            slotMaxTime: "24:00:00",
+            dayHeaderFormat: { weekday: "short", day: "numeric" },
+            slotLabelFormat: {
+              hour: "numeric",
+              minute: "2-digit",
+              meridiem: "short"
+            }
+          },
+          timeGridDay: {
+            allDaySlot: false
+          }
+        }
+      });
+
+      calendar.render();
+      
+      // Close modal when clicking outside
+      const eventModal = document.getElementById("event-modal");
+      if (eventModal) {
+        eventModal.addEventListener("click", function(e) {
+          if (e.target === this) {
+            closeModal();
+          }
+        });
+      }
+    }
+  });
+</script>
+
+<script>
+let map, marker, selectedPlace = null;
+let mapInitialized = false;
+
+function openLocationModal() {
+  const eventModal = document.getElementById("event-modal");
+  if (eventModal) eventModal.style.display = "none"; // Close the Create Event modal
+  document.getElementById("location-modal").classList.remove("hidden");
+  if (!mapInitialized) {
+    initMapPicker();
+    mapInitialized = true;
+  } else if (selectedPlace) {
+    document.getElementById("pac-input").value = selectedPlace.name;
+  }
+}
+
+function closeLocationModal() {
+  document.getElementById("location-modal").classList.add("hidden");
+}
+
+
+function confirmLocation() {
+  if (selectedPlace) {
+    document.getElementById("location_picker").value = selectedPlace.name;
+    document.getElementById("id_location_name").value = selectedPlace.name;
+    document.getElementById("id_latitude").value = selectedPlace.lat;
+    document.getElementById("id_longitude").value = selectedPlace.lng;
+
+    closeLocationModal();
+
+    // 🔁 Restore the Create Event modal
+    const eventModal = document.getElementById("event-modal");
+    if (eventModal) eventModal.style.display = "flex";
+  } else {
+    alert("Please select a location.");
+  }
+}
+
+
+
+function initMapPicker() {
+  const latInput = document.getElementById("id_latitude");
+  const lngInput = document.getElementById("id_longitude");
+  const nameInput = document.getElementById("id_location_name");
+
+  const mapElement = document.getElementById("map");
+  const input = document.getElementById("pac-input");
+  const geocoder = new google.maps.Geocoder();
+
+  let defaultLat = 36.2021;
+  let defaultLng = 37.1343;
+
+  // Only call setupMap once user location (or fallback) is known
+  function setupMap(lat, lng, name = "Selected Location") {
+    map = new google.maps.Map(mapElement, {
+      center: { lat, lng },
+      zoom: 13,
+      mapTypeControl: false,
+    });
+
+    marker = new google.maps.Marker({
+      position: { lat, lng },
+      map: map,
+      draggable: true,
+      visible: true,
+    });
+
+    selectedPlace = {
+      name: name,
+      lat: lat.toFixed(6),
+      lng: lng.toFixed(6),
+    };
+
+    input.value = name;
+
+    const autocomplete = new google.maps.places.Autocomplete(input);
+    autocomplete.bindTo("bounds", map);
+
+    autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace();
+      if (!place.geometry || !place.geometry.location) {
+        alert("No location found.");
+        return;
+      }
+
+      const location = place.geometry.location;
+      map.setCenter(location);
+      map.setZoom(17);
+      marker.setPosition(location);
+      marker.setVisible(true);
+
+      selectedPlace = {
+        name: place.formatted_address || place.name || "Selected Location",
+        lat: location.lat().toFixed(6),
+        lng: location.lng().toFixed(6),
+      };
+    });
+
+    map.addListener("click", (e) => {
+      marker.setPosition(e.latLng);
+      marker.setVisible(true);
+      map.panTo(e.latLng);
+
+      geocoder.geocode({ location: e.latLng }, (results, status) => {
+        if (status === "OK" && results[0]) {
+          const address = results[0].formatted_address;
+          input.value = address;
+          selectedPlace = {
+            name: address,
+            lat: e.latLng.lat().toFixed(6),
+            lng: e.latLng.lng().toFixed(6),
+          };
+        } else {
+          selectedPlace = {
+            name: "Custom Pin",
+            lat: e.latLng.lat().toFixed(6),
+            lng: e.latLng.lng().toFixed(6),
+          };
+        }
+      });
+    });
+
+    marker.addListener("dragend", (e) => {
+      geocoder.geocode({ location: e.latLng }, (results, status) => {
+        if (status === "OK" && results[0]) {
+          const address = results[0].formatted_address;
+          input.value = address;
+          selectedPlace = {
+            name: address,
+            lat: e.latLng.lat().toFixed(6),
+            lng: e.latLng.lng().toFixed(6),
+          };
+        } else {
+          selectedPlace = {
+            name: "Dragged Pin",
+            lat: e.latLng.lat().toFixed(6),
+            lng: e.latLng.lng().toFixed(6),
+          };
+        }
+      });
+    });
+  }
+
+  // Check if location was previously set (editing)
+  if (latInput.value && lngInput.value) {
+    setupMap(parseFloat(latInput.value), parseFloat(lngInput.value), nameInput.value);
+    return;
+  }
+
+  // Try to use user's current location
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setupMap(position.coords.latitude, position.coords.longitude, "Current Location");
+      },
+      () => {
+        setupMap(defaultLat, defaultLng);
+      }
+    );
+  } else {
+    setupMap(defaultLat, defaultLng);
+  }
+}
+</script>
+
+<script>
+  // Enhanced modal functions with smooth animation for cards
+function openEventModal(eventId) {
+    // Find the clicked event card
+    const eventCard = document.querySelector(`[onclick="openEventModal('${eventId}')"]`);
+    if (!eventCard) return;
+    
+    // Get the modal elements
+    const modal = document.getElementById('event-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalImage = document.getElementById('modal-image');
+    const modalDate = document.getElementById('modal-date');
+    const modalClub = document.getElementById('modal-club');
+    const modalStatus = document.getElementById('modal-status');
+    const modalParticipants = document.getElementById('modal-participants');
+    const modalLocation = document.getElementById('modal-location');
+    const modalTransportation = document.getElementById('modal-transportation');
+    const modalDescription = document.getElementById('modal-description');
+    
+    // Extract data from the card
+    const title = eventCard.querySelector('h2').textContent;
+    const participants = eventCard.querySelector('p').textContent;
+    
+    // Set modal content
+    modalTitle.textContent = title;
+    modalParticipants.textContent = participants;
+    
+    // Set image if available
+    const img = eventCard.querySelector('img');
+    if (img) {
+      modalImage.innerHTML = '';
+      const newImg = document.createElement('img');
+      newImg.src = img.src;
+      newImg.alt = img.alt;
+      newImg.className = 'w-full h-48 object-cover rounded-lg';
+      modalImage.appendChild(newImg);
+    }
+    
+    // Set other details (in a real app, these would come from the server)
+    modalDate.textContent = '2023-11-15 14:00';
+    modalClub.textContent = 'Example Club';
+    modalStatus.textContent = 'Pending';
+    modalStatus.className = 'text-sm ' + (eventCard.querySelector('[onclick*="event_approve"]') ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400');
+    modalLocation.textContent = 'Main Campus, Building A';
+    modalTransportation.textContent = 'Bus requested';
+    modalDescription.textContent = 'This is a sample event description that would provide more details about the event.';
+    
+    // Show modal with smooth animation
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.classList.add('active');
+    }, 10);
+    document.body.classList.add('overflow-hidden');
+  }
+
+  function closeModal() {
+    const modal = document.getElementById('event-modal');
+    modal.classList.remove('active');
+    setTimeout(() => {
+      modal.style.display = 'none';
+      document.body.classList.remove('overflow-hidden');
+    }, 300);
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('event-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeModal();
+    }
+  });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const eventForm = document.getElementById('eventForm');
+  if (eventForm) {
+    eventForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(eventForm);
+fetch(eventForm.action, {
+  method: 'POST',
+  body: formData,
+  headers: {
+    'X-Requested-With': 'XMLHttpRequest',
+    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+  }
+})
+.then(response => {
+  if (!response.ok) {
+    return response.text().then(text => {
+      throw new Error(`Error ${response.status}: ${text}`);
+    });
+  }
+  return response.json();
+})
+.then(data => {
+  if (data.success) {
+    window.location.href = "/en/activity-center-admin/events/";
+  } else {
+    document.getElementById('modal-errors').innerText = Object.values(data.errors).join('\n');
+  }
+})
+.catch(error => {
+  console.error("Submission failed:", error);
+  document.getElementById('modal-errors').innerText = "Something went wrong. Please try again.";
+});
+
+    });
+  }
+});
+
+</script>
+
+<div id="event-detail-modal" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-title"></h3>
+      <button class="modal-close" onclick="closeEventModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <div class="form-group">
+            <label class="form-label">Event Date</label>
+            <p id="modal-date" class="form-control bg-gray-50"></p>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Number of Participants</label>
+            <p id="modal-participants" class="form-control bg-gray-50"></p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Transportation Request</label>
+            <p id="modal-transportation" class="form-control bg-gray-50"></p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Total Cost</label>
+            <p id="modal-cost" class="form-control bg-gray-50"></p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="form-group">
+            <label class="form-label">Event Needs</label>
+            <p id="modal-needs" class="form-control bg-gray-50 min-h-[100px]"></p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <a id="modal-location-link" href="#" target="_blank" rel="noopener noreferrer" class="form-control bg-gray-50 block hover:bg-gray-100 transition-colors">
+              <i class="fas fa-map-marker-alt mr-2"></i>
+              <span id="modal-location-text">—</span>
+            </a>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Event Image</label>
+            <div id="modal-image-container" class="hidden">
+              <img id="modal-image" src="" alt="" class="w-full h-48 object-cover rounded-lg">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <a id="modal-meeting-btn" href="#" class="btn btn-secondary">
+          <i class="fas fa-calendar-alt mr-2"></i>Schedule Meeting
+        </a>
+        <a id="modal-reject-btn" href="#" class="btn btn-secondary">
+          <i class="fas fa-times mr-2"></i>Reject
+        </a>
+        <a id="modal-approve-btn" href="#" class="btn btn-primary">
+          <i class="fas fa-check mr-2"></i>Approve
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openEventDetailModal(eventId) {
+  fetch(`/activity-center-admin/events/${eventId}/details/`)
+    .then(response => response.json())
+    .then(data => {
+      // Update modal content
+      document.getElementById("modal-title").innerText = data.title;
+      document.getElementById("modal-date").innerText = new Date(data.event_date).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      document.getElementById("modal-participants").innerText = data.participants || "—";
+      document.getElementById("modal-transportation").innerText = data.transportation_request === true || data.transportation_request === "True" ? "Yes" : "No";
+      document.getElementById("modal-cost").innerText = `TL ${data.total_cost || "0.00"}`;
+      document.getElementById("modal-needs").innerText = data.needs || "—";
+
+      // Update location
+      const locationLink = document.getElementById("modal-location-link");
+      const locationText = document.getElementById("modal-location-text");
+      if (data.latitude && data.longitude) {
+        const mapUrl = `https://www.google.com/maps?q=${data.latitude},${data.longitude}`;
+        locationLink.href = mapUrl;
+        locationText.textContent = data.location_name || "View on map";
+      } else {
+        locationLink.href = "#";
+        locationText.textContent = data.location_name || "—";
+      }
+
+      // Update image
+      const imageContainer = document.getElementById("modal-image-container");
+      const imageEl = document.getElementById("modal-image");
+      if (data.image) {
+        imageEl.src = data.image;
+        imageContainer.classList.remove("hidden");
+      } else {
+        imageContainer.classList.add("hidden");
+      }
+
+      // Update action URLs
+      document.getElementById("modal-approve-btn").href = `/activity-center-admin/events/${eventId}/approve/`;
+      document.getElementById("modal-reject-btn").href = `/activity-center-admin/events/${eventId}/reject/`;
+      document.getElementById("modal-meeting-btn").href = `/activity-center-admin/events/${eventId}/schedule-meeting/`;
+
+      // Show modal
+      document.getElementById("event-detail-modal").style.display = "flex";
+    });
+}
+
+function closeEventModal() {
+  document.getElementById("event-detail-modal").style.display = "none";
+}
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const tabs = document.querySelectorAll('[role="tab"]');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        localStorage.setItem('activeACATab', tab.dataset.tabsTarget);
+      });
+    });
+
+    const savedTab = localStorage.getItem('activeACATab');
+    if (savedTab) {
+      const targetBtn = document.querySelector(`[data-tabs-target="${savedTab}"]`);
+      if (targetBtn) {
+        targetBtn.click();
+      }
+    } else {
+      // fallback to first tab on first load
+      document.querySelector('[role="tab"]').click();
+    }
+  });
+</script>
+
+
+{% endblock %}

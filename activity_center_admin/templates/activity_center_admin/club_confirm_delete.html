@@ -1,0 +1,30 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% trans "Delete Club" %}</title>
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+  <header>
+    <h1>{% trans "Delete Club" %}</h1>
+  </header>
+  <main>
+    <p>
+      {% blocktrans with club_name=object.name %}
+        Are you sure you want to delete the club "{{ club_name }}"?
+      {% endblocktrans %}
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit">{% trans "Confirm Delete" %}</button>
+    </form>
+
+    <a href="{% url 'activity_center_admin:club_list' %}">{% trans "Cancel" %}</a>
+  </main>
+</body>
+</html>

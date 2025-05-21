@@ -1,0 +1,435 @@
+{% extends "navbar.html" %}
+{% load static i18n %}
+
+{% block content %}
+{% block breadcrumbs %}
+<nav class="flex text-sm" aria-label="Breadcrumb">
+  <ol class="inline-flex items-center space-x-1 md:space-x-3">
+    <li class="inline-flex items-center">
+      <span class="text-gray-700 dark:text-gray-300">Activity Center Admin</span>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <a href="{% url 'activity_center_admin:aca_all_events' %}" class="ml-1 text-blue-600 hover:underline dark:text-blue-400">
+          {% trans "Events" %}
+        </a>
+      </div>
+    </li>
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span class="ml-1 text-blue-600 dark:text-blue-400">
+          {% trans "Edit Event" %}
+        </span>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+<style>
+:root {
+  --calendar-bg: #fcfdfe;
+  --sidebar-bg: #f8fafc;
+  --primary-color: #4f46e5;
+  --primary-light: #e0e7ff;
+  --primary-dark: #3730a3;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --text-color: #334155;
+  --text-light: #64748b;
+  --border-radius: 14px;
+  --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --border-light: 1px solid #e2e8f0;
+}
+
+.event-edit-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+.modal-container {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-header {
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: var(--border-light);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  transition: var(--transition);
+  background-color: white;
+  color: var(--text-color);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: var(--border-light);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+}
+
+.btn-secondary {
+  background-color: white;
+  color: var(--text-color);
+  border-color: var(--border-light);
+}
+
+.btn-secondary:hover {
+  background-color: #f8fafc;
+}
+
+.file-upload-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.file-upload-input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.file-upload-label {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: var(--border-light);
+  border-radius: 8px;
+  background-color: white;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.file-upload-label:hover {
+  border-color: var(--primary-color);
+}
+
+.file-upload-text {
+  margin-left: 0.5rem;
+  color: var(--text-light);
+}
+
+/* Dark mode styles */
+.dark .modal-container {
+  background-color: #1f2937;
+}
+
+.dark .modal-header {
+  border-bottom-color: #374151;
+}
+
+.dark .modal-title {
+  color: #f3f4f6;
+}
+
+.dark .form-label {
+  color: #f3f4f6;
+}
+
+.dark .form-control {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
+.dark .form-control:focus {
+  border-color: var(--primary-color);
+}
+
+.dark .btn-secondary {
+  background-color: #374151;
+  color: #f3f4f6;
+  border-color: #4b5563;
+}
+
+.dark .btn-secondary:hover {
+  background-color: #4b5563;
+}
+
+.dark .file-upload-label {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+</style>
+
+<div class="event-edit-container">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 class="modal-title">{% trans "Edit Event" %}: {{ event.title }}</h3>
+    </div>
+    
+    <div class="modal-body">
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="id_title" class="form-label">{{ form.title.label }} *</label>
+          <input type="text" name="title" id="id_title" class="form-control" value="{{ form.title.value }}" required>
+        </div>
+
+        <div class="form-group">
+          <label for="id_event_date" class="form-label">{{ form.event_date.label }} *</label>
+          <input type="date" name="event_date" id="id_event_date" class="form-control" value="{{ form.event_date.value|date:'Y-m-d' }}" required>
+        </div>
+
+        <div class="form-group">
+          <label for="id_participants" class="form-label">{{ form.participants.label }} *</label>
+          <textarea name="participants" id="id_participants" class="form-control" rows="2" required>{{ form.participants.value }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="id_image" class="form-label">{{ form.image.label }}</label>
+          <div class="file-upload-wrapper">
+            <input type="file" name="image" id="id_image" class="file-upload-input" accept="image/*">
+            <label for="id_image" class="file-upload-label">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+              </svg>
+              <span class="file-upload-text">Choose an image file...</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="id_needs" class="form-label">{{ form.needs.label }} *</label>
+          <textarea name="needs" id="id_needs" class="form-control" rows="3" required>{{ form.needs.value }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="id_total_cost" class="form-label">{{ form.total_cost.label }}</label>
+          <input type="number" name="total_cost" id="id_total_cost" class="form-control" value="{{ form.total_cost.value }}" step="0.01">
+        </div>
+
+        <div class="form-group">
+          <label for="id_transportation_request" class="form-label">{{ form.transportation_request.label }}</label>
+          {{ form.transportation_request }}
+        </div>
+
+        <div class="form-group">
+          <label for="id_supporting_documents" class="form-label">{{ form.supporting_documents.label }}</label>
+          <div class="file-upload-wrapper">
+            <input type="file" name="supporting_documents" id="id_supporting_documents" class="file-upload-input" multiple>
+            <label for="id_supporting_documents" class="file-upload-label">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+              </svg>
+              <span class="file-upload-text">Choose supporting documents...</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="location_picker" class="form-label">{% trans "Event Location" %} *</label>
+          <input type="text" id="location_picker" class="form-control" readonly onclick="openLocationModal()" value="{{ form.location_name.value }}">
+          <input type="hidden" name="location_name" id="id_location_name" value="{{ form.location_name.value }}">
+          <input type="hidden" name="latitude" id="id_latitude" value="{{ form.latitude.value }}">
+          <input type="hidden" name="longitude" id="id_longitude" value="{{ form.longitude.value }}">
+        </div>
+
+        <div class="modal-footer">
+          <a href="{% url 'activity_center_admin:aca_all_events' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+          <button type="submit" class="btn btn-primary">{% trans "Update Event" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Map Modal -->
+<div id="location-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg w-full max-w-2xl">
+    <input id="pac-input" class="form-control mb-2 w-full" type="text" placeholder="Search for a location..." />
+    <div id="map" style="height: 400px; border-radius: 8px;"></div>
+    <div class="mt-4 text-right">
+      <button class="btn btn-secondary" onclick="closeLocationModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmLocation()">Choose</button>
+    </div>
+  </div>
+</div>
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&libraries=places&language=en&v=weekly"></script>
+
+<script>
+  let map, marker, selectedPlace = null;
+
+  function openLocationModal() {
+    document.getElementById("location-modal").classList.remove("hidden");
+    if (!map) initMapPicker();
+  }
+
+  function closeLocationModal() {
+    document.getElementById("location-modal").classList.add("hidden");
+  }
+
+  function confirmLocation() {
+    if (selectedPlace) {
+      document.getElementById("location_picker").value = selectedPlace.name;
+      document.getElementById("id_location_name").value = selectedPlace.name;
+      document.getElementById("id_latitude").value = selectedPlace.lat;
+      document.getElementById("id_longitude").value = selectedPlace.lng;
+    }
+    closeLocationModal();
+  }
+
+  function initMapPicker() {
+    const lat = parseFloat(document.getElementById("id_latitude").value) || 36.2021;
+    const lng = parseFloat(document.getElementById("id_longitude").value) || 37.1343;
+    const name = document.getElementById("id_location_name").value || "Location";
+
+    const input = document.getElementById("pac-input");
+    const geocoder = new google.maps.Geocoder();
+
+    map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat, lng },
+      zoom: 13,
+      mapTypeControl: false,
+    });
+
+    marker = new google.maps.Marker({
+      position: { lat, lng },
+      map,
+      draggable: true,
+      visible: true,
+    });
+
+    selectedPlace = { name, lat: lat.toFixed(6), lng: lng.toFixed(6) };
+    input.value = name;
+
+    const autocomplete = new google.maps.places.Autocomplete(input);
+    autocomplete.bindTo("bounds", map);
+    autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace();
+      if (!place.geometry || !place.geometry.location) return;
+      const loc = place.geometry.location;
+      marker.setPosition(loc);
+      map.setCenter(loc);
+      map.setZoom(17);
+      selectedPlace = {
+        name: place.formatted_address || place.name,
+        lat: loc.lat().toFixed(6),
+        lng: loc.lng().toFixed(6),
+      };
+    });
+
+    map.addListener("click", (e) => {
+      marker.setPosition(e.latLng);
+      map.panTo(e.latLng);
+      geocoder.geocode({ location: e.latLng }, (results, status) => {
+        if (status === "OK" && results[0]) {
+          selectedPlace = {
+            name: results[0].formatted_address,
+            lat: e.latLng.lat().toFixed(6),
+            lng: e.latLng.lng().toFixed(6),
+          };
+          input.value = selectedPlace.name;
+        }
+      });
+    });
+  }
+
+  // File upload preview
+  document.addEventListener('DOMContentLoaded', function() {
+    const fileInputs = document.querySelectorAll('.file-upload-input');
+    
+    fileInputs.forEach(input => {
+      input.addEventListener('change', function(e) {
+        const label = this.nextElementSibling;
+        const text = label.querySelector('.file-upload-text');
+        
+        if (this.files.length > 0) {
+          if (this.multiple) {
+            text.textContent = `${this.files.length} files selected`;
+          } else {
+            text.textContent = this.files[0].name;
+          }
+        } else {
+          text.textContent = text.getAttribute('data-default-text') || 'Choose a file...';
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}
+
+
+  

@@ -1,0 +1,15 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+{% block content %}
+<h2>{% trans "Results for:" %} {{ poll.question }}</h2>
+
+<ul>
+  {% for choice in poll.choices.all %}
+    <li>{{ choice.text }} – {{ choice.vote_count }} {% trans "vote" %}{{ choice.vote_count|pluralize }}</li>
+  {% empty %}
+    <li>{% trans "No choices found for this poll." %}</li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'polls:poll_list' %}" class="btn btn-secondary">{% trans "Back to Polls" %}</a>
+{% endblock %}

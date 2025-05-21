@@ -1,0 +1,18 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+{% block content %}
+<h2>{{ poll.question }}</h2>
+<p>{% trans "Created on:" %} {{ poll.created_at }}</p>
+<p>{% trans "Status:" %} {% if poll.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}</p>
+
+<h3>{% trans "Choices:" %}</h3>
+<ul>
+    {% for choice in poll.choices.all %}
+        <li>{{ choice.text }} - {{ choice.votes }} {% trans "votes" %}</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'polls:vote' poll.id %}" class="btn btn-primary">{% trans "Vote on this Poll" %}</a>
+<a href="{% url 'polls:poll_list' %}" class="btn btn-secondary">{% trans "Back to Polls" %}</a>
+<a href="{% url 'club_leader:club_leader:dashboard' %}" class="btn btn-info">{% trans "Go back to Dashboard" %}</a>
+{% endblock %}

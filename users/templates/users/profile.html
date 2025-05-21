@@ -1,0 +1,202 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5 p-10 w-full rounded-lg">
+  <!-- Left Column - Profile Picture (now smaller) -->
+  <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 flex flex-col items-center justify-center h-[180px] md:col-span-1">
+    <div class="bg-gray-100 dark:bg-gray-700 px-3 py-1 w-full text-left rounded font-bold text-lg text-blue-700 dark:text-blue-400 mb-4">
+      Profile Picture
+    </div>
+    <div class="relative inline-block w-[80px] h-[80px]">
+      <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default_profile.jpg' %}{% endif %}" 
+           alt="Profile Picture"
+           class="w-full h-full rounded-full object-cover border-3 border-blue-700 dark:border-blue-500 shadow-md">
+      <form method="POST" enctype="multipart/form-data" id="profilePictureForm">
+        {% csrf_token %}
+        <label for="fileInput" class="absolute bottom-0 right-0 bg-blue-700 dark:bg-blue-600 text-white w-[24px] h-[24px] flex items-center justify-center text-[14px] rounded-full cursor-pointer shadow border border-white hover:bg-blue-800 dark:hover:bg-blue-700">
+          +
+          <input type="file" name="profile_picture" id="fileInput" class="hidden" onchange="this.form.submit()">
+        </label>
+      </form>
+    </div>
+    {% if form.profile_picture.errors %}
+      <div class="text-red-500 dark:text-red-400 text-xs mt-2">
+        {{ form.profile_picture.errors }}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Right Column - Profile Information (now takes 2/3 width) -->
+  <div class="bg-white dark:bg-gray-800 p-6 rounded-md shadow flex flex-col md:col-span-2">
+    <div class="bg-gray-100 dark:bg-gray-700 px-4 py-2 w-full text-left rounded font-bold text-xl text-blue-700 dark:text-blue-400 mb-6">
+      Profile Information
+    </div>
+    <form method="POST" class="space-y-4">
+      {% csrf_token %}
+
+      {% if not user.is_superuser and user.get_role != "activity_center_admin" %}
+        <div>
+          <label for="student_id" class="font-bold text-blue-700 dark:text-blue-400 block mb-2">Student ID:</label>
+          <input type="text" id="student_id" name="student_id" value="{{ user.student_id|default:'Not Assigned' }}" disabled
+          class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 cursor-not-allowed text-gray-900 dark:text-gray-300">
+        </div>
+      {% endif %}
+
+      <div>
+        <label for="name" class="font-bold text-blue-700 dark:text-blue-400 block mb-2">Name:</label>
+        <input type="text" id="name" name="name" value="{{ user.name }}" disabled readonly
+        class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 cursor-not-allowed text-gray-900 dark:text-gray-300">
+      </div>
+
+      <div>
+        <label for="email" class="font-bold text-blue-700 dark:text-blue-400 block mb-2">Email:</label>
+        <input type="email" id="email" name="email" value="{{ user.email }}" disabled
+        class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 cursor-not-allowed text-gray-900 dark:text-gray-300">
+      </div>
+
+      {% if user.get_role == "activity_center_admin" %}
+        <div>
+          <label for="admin" class="font-bold text-blue-700 dark:text-blue-400 block mb-2">Activity Center Admin:</label>
+          <input type="text" id="admin" name="admin" value="Activity Center Admin" disabled
+          class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 cursor-not-allowed text-gray-900 dark:text-gray-300">
+        </div>
+      {% elif not user.is_superuser %}
+        {% if leader_memberships %}
+          {% for m in leader_memberships %}
+            <div>
+              <label for="leader" class="font-bold text-blue-700 dark:text-blue-400 block mb-2">Leader of:</label>
+              <input type="text" id="leader" name="leader" value="{{ m.club.name }}" disabled
+              class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 cursor-not-allowed text-gray-900 dark:text-gray-300">
+            </div>
+          {% endfor %}
+        {% endif %}
+        {% if member_memberships %}
+          {% for m in member_memberships %}
+            <div>
+              <label for="member" class="font-bold text-blue-700 dark:text-blue-400 block mb-2">Member of:</label>
+              <input type="text" id="member" name="member" value="{{ m.club.name }}" disabled
+              class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 cursor-not-allowed text-gray-900 dark:text-gray-300">
+            </div>
+          {% endfor %}
+        {% endif %}
+        {% if not leader_memberships and not member_memberships %}
+          <input type="text" id="role" name="role" value="No club roles yet" disabled
+          class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 cursor-not-allowed text-gray-900 dark:text-gray-300">
+        {% endif %}
+      {% endif %}
+
+      {% if not user.is_superuser and user.get_role != "activity_center_admin" %}
+        <div>
+          <label for="status" class="font-bold text-blue-700 dark:text-blue-400 block mb-2">Status:</label>
+          <input type="text" id="status" name="status" value="{{ user.status|default:'Active' }}" disabled
+          class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 cursor-not-allowed text-gray-900 dark:text-gray-300">
+        </div>
+
+        <div>
+          <label for="contact" class="font-bold text-blue-700 dark:text-blue-400 block mb-2">Contact Number:</label>
+          <input type="text" id="contact" name="contact" value="{{ form.contact.value|default_if_none:'' }}"
+                placeholder="Enter your contact number (e.g., +903456789907)"
+                class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-blue-700 dark:focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">
+        </div>
+
+        <button type="submit" name="update_profile"
+                class="bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold py-2 px-4 w-full rounded transition duration-300">
+          Update Profile
+        </button>
+      {% endif %}
+    </form>
+    <!-- WebAuthn Registration Button -->
+<div class="mt-6">
+  <h2 class="text-lg font-bold text-blue-700 dark:text-blue-400 mb-2">Biometric Login</h2>
+  <button id="webauthn-register" class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition duration-200">
+    Enable Fingerprint / Face ID
+  </button>
+</div>
+
+<script>
+  // Helper: convert base64url string to ArrayBuffer
+  function b64urlToBuffer(b64url) {
+    const padding = '='.repeat((4 - b64url.length % 4) % 4);
+    const base64 = b64url.replace(/-/g, '+').replace(/_/g, '/') + padding;
+    const binary = atob(base64);
+    const buffer = new ArrayBuffer(binary.length);
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return buffer;
+  }
+
+  document.getElementById('webauthn-register').addEventListener('click', async () => {
+    try {
+      // 1. Begin registration on server
+      const beginResp = await fetch("{% url 'credential-registration-begin' %}", {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      });
+      if (!beginResp.ok) {
+        throw new Error(`Begin registration failed: ${beginResp.status}`);
+      }
+
+      // 2. Parse raw PublicKey options
+      const publicKey = await beginResp.json();
+      console.log('Raw PublicKey options:', publicKey);
+
+      // 3. Convert challenge & user.id from base64url to ArrayBuffer
+      publicKey.challenge = b64urlToBuffer(publicKey.challenge);
+      publicKey.user.id   = b64urlToBuffer(publicKey.user.id);
+
+      // 4. Convert any excludeCredentials IDs (if non-empty)
+      if (Array.isArray(publicKey.excludeCredentials)) {
+        publicKey.excludeCredentials = publicKey.excludeCredentials.map(cred => ({
+          ...cred,
+          id: b64urlToBuffer(cred.id),
+        }));
+      }
+
+      // 5. (Optional) Force platform authenticator
+      publicKey.authenticatorSelection = {
+        authenticatorAttachment: 'platform',
+        userVerification: 'preferred',
+        residentKey: 'required',
+      };
+
+      // 6. Trigger the browser prompt
+      const credential = await navigator.credentials.create({ publicKey });
+
+      // 7. Complete registration on server
+      const completeResp = await fetch("{% url 'credential-registration-complete' %}", {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credential),
+      });
+      if (!completeResp.ok) {
+        throw new Error(`Complete registration failed: ${completeResp.status}`);
+      }
+
+      alert('✅ Biometric login successfully registered!');
+      window.location.reload();
+
+    } catch (err) {
+      console.error('WebAuthn error:', err);
+      alert(`⚠️ Biometric prompt failed: ${err.message}`);
+    }
+  });
+</script>
+
+
+  </div>
+</div>
+
+{% endblock content %}

@@ -1,0 +1,144 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+ 
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header Card -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-6">
+    <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center mb-4 sm:mb-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600 dark:text-blue-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{% trans "Event Attendance Summary" %}</h2>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            {% trans "Reports" %}
+          </span>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Filter Section -->
+    <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700">
+      <form method="get" class="flex flex-col sm:flex-row sm:items-end sm:justify-end space-y-4 sm:space-y-0 sm:space-x-4">
+        <div class="w-full sm:w-64">
+          <label for="club" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{% trans "Filter by Club" %}</label>
+          <select name="club" id="club" onchange="this.form.submit()"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="">{% trans "All Clubs" %}</option>
+            {% for club in clubs %}
+              <option value="{{ club.id }}" {% if club.id == selected_club_id %}selected{% endif %}>{{ club.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </form>
+    </div>
+  </div>
+ 
+  <!-- Stats Cards -->
+  {% if summary %}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <!-- Total Events Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <div class="flex items-center">
+        <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{% trans "Total Events" %}</p>
+          <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ summary|length }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+ 
+  <!-- Table Section -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <tr>
+            <th scope="col" class="px-6 py-3">{% trans "Club" %}</th>
+            <th scope="col" class="px-6 py-3">{% trans "Event" %}</th>
+            <th scope="col" class="px-6 py-3">{% trans "Date" %}</th>
+            <th scope="col" class="px-6 py-3 text-center">{% trans "Planning to Attend" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in summary %}
+          <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4">
+              <div class="flex items-center">
+                <div class="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                  <span class="text-indigo-600 dark:text-indigo-300 font-medium">{{ item.club|first|upper }}</span>
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">{{ item.club }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">{{ item.event }}</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="text-sm text-gray-500 dark:text-gray-400">{{ item.date|date:"F d, Y H:i" }}</div>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">
+                {{ item.count }} {% trans "attendees" %}
+              </span>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+              {% trans "No attendance data available." %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <!-- Pagination Controls -->
+{% if page_obj.has_other_pages %}
+<div class="px-6 py-4 flex justify-center items-center space-x-2 bg-gray-50 dark:bg-gray-700 border-t dark:border-gray-600">
+  {% if page_obj.has_previous %}
+    <a href="?{% if selected_club_id %}club={{ selected_club_id }}&{% endif %}page=1"
+       class="px-3 py-1 border rounded-md text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100">
+      First
+    </a>
+    <a href="?{% if selected_club_id %}club={{ selected_club_id }}&{% endif %}page={{ page_obj.previous_page_number }}"
+       class="px-3 py-1 border rounded-md text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100">
+      Previous
+    </a>
+  {% endif %}
+
+  <span class="px-3 py-1 text-sm text-gray-600 dark:text-gray-300">
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+  </span>
+
+  {% if page_obj.has_next %}
+    <a href="?{% if selected_club_id %}club={{ selected_club_id }}&{% endif %}page={{ page_obj.next_page_number }}"
+       class="px-3 py-1 border rounded-md text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100">
+      Next
+    </a>
+    <a href="?{% if selected_club_id %}club={{ selected_club_id }}&{% endif %}page={{ page_obj.paginator.num_pages }}"
+       class="px-3 py-1 border rounded-md text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100">
+      Last
+    </a>
+  {% endif %}
+</div>
+{% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

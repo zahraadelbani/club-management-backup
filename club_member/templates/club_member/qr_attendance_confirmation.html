@@ -1,0 +1,43 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="max-w-xl mx-auto p-6 mt-10 bg-white rounded shadow text-center">
+  <h2 class="text-xl font-bold mb-4">{{ event.title }}</h2>
+  <p class="text-gray-600">📅 {{ event.event_date|date:"F d, Y H:i" }}</p>
+
+  {% if not attendance_record.is_attending %}
+    <p class="text-red-600 font-semibold mt-4">{% trans "You are not attending this event." %}</p>
+    <a href="{% url 'club_member:event_detail' event.id %}" class="btn mt-4">← {% trans "Back to Event" %}</a>
+
+  {% elif attendance_record.checked_in %}
+    <p class="text-green-600 font-semibold mt-4">
+      ✅ {% trans "You have already checked in at" %} {{ attendance_record.checked_in_at|date:"F d, Y H:i" }}
+    </p>
+    <button class="bg-gray-400 text-white font-bold py-2 px-4 rounded cursor-not-allowed mt-4" disabled>
+      ✅ {% trans "Already Checked In" %}
+    </button>
+    <a href="{% url 'club_member:event_detail' event.id %}" class="btn mt-4 block">← {% trans "Back to Event" %}</a>
+
+  {% else %}
+    <p class="text-blue-600 font-semibold mt-4">🎟️ {% trans "You have RSVP’d but not yet checked in." %}</p>
+    <form method="post" class="mt-4" id="checkin-form">
+      {% csrf_token %}
+      <button id="checkin-btn" type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        ✅ {% trans "Check In Now" %}
+      </button>
+    </form>
+  {% endif %}
+</div>
+
+<script>
+  const form = document.getElementById('checkin-form');
+  const button = document.getElementById('checkin-btn');
+  if (form && button) {
+    form.addEventListener('submit', () => {
+      button.disabled = true;
+      button.innerText = '✅ Checking In...';
+    });
+  }
+</script>
+{% endblock %}

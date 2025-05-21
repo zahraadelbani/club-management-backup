@@ -1,0 +1,146 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+
+{% block breadcrumbs %}
+<nav class="text-sm text-gray-600 dark:text-gray-300 mb-4" aria-label="Breadcrumb">
+  <ol class="flex space-x-2 items-center">
+    <li>Club Leader</li>
+    <li class="flex items-center">
+      <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+      </svg>
+      <a href="{% url 'club_leader:list_documents' %}" class="ml-1 text-blue-600 hover:underline dark:text-blue-400">
+        Documents
+      </a>
+    </li>
+    <li class="flex items-center">
+      <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mx-1" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414L12.414 10l-3.707 3.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+      </svg>
+      <span class="ml-1 text-blue-600 hover:underline dark:text-blue-400">Upload Document</span>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+<style>
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: 3px solid black;
+}
+
+.btn-secondary {
+  color: #334155;
+  border: 1px solid black;
+}
+
+.btn-secondary:hover {
+  background-color: #f8fafc;
+  border: 1px solid black;
+}
+</style>
+
+<div class="max-w-3xl mx-auto my-8 px-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Upload Club Document</h3>
+    </div>
+    
+    <div class="p-6">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="mb-5">
+          <label for="id_title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title *</label>
+          <input type="text" name="title" id="id_title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
+          {% if form.title.help_text %}
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ form.title.help_text }}</p>
+          {% endif %}
+          {% for error in form.title.errors %}
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+          {% endfor %}
+        </div>
+        
+        <div class="mb-5">
+          <label for="id_description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
+          <textarea name="description" id="id_description" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
+          {% if form.description.help_text %}
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ form.description.help_text }}</p>
+          {% endif %}
+          {% for error in form.description.errors %}
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div class="mb-5">
+          <label for="id_file" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Document File *</label>
+          <div class="relative">
+            <input type="file" name="file" id="id_file" class="hidden" required>
+            <label for="id_file" class="flex items-center justify-center w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600">
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+              </svg>
+              <span class="file-upload-text">Choose a document file...</span>
+            </label>
+          </div>
+          {% if form.file.help_text %}
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ form.file.help_text }}</p>
+          {% endif %}
+          {% for error in form.file.errors %}
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div class="flex items-center mb-5">
+          <input type="checkbox" name="is_public" id="id_is_public" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" checked>
+          <label for="id_is_public" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Make document public (visible to all members)</label>
+        </div>
+        {% if form.is_public.help_text %}
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ form.is_public.help_text }}</p>
+        {% endif %}
+        {% for error in form.is_public.errors %}
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+        {% endfor %}
+        
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button type="button" onclick="window.location.href='{% url 'club_leader:list_documents' %}'" class=" btn btn-secondary bg-white dark:bg-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            Upload Document
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const fileInput = document.getElementById('id_file');
+  if (fileInput) {
+    const fileLabel = fileInput.nextElementSibling;
+    const fileText = fileLabel.querySelector('.file-upload-text');
+    
+    fileInput.addEventListener('change', function() {
+      if (this.files.length > 0) {
+        fileText.textContent = this.files[0].name;
+      } else {
+        fileText.textContent = 'Choose a document file...';
+      }
+    });
+  }
+});
+</script>
+
+{% endblock %}

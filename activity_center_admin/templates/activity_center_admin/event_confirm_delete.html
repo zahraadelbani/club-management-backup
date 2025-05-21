@@ -1,0 +1,28 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% trans "Delete Event" %}</title>
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+  <header>
+    <h1>{% trans "Delete Event" %}</h1>
+  </header>
+  <main>
+    <p>
+      {% blocktrans with title=object.title %}
+        Are you sure you want to delete the event "{{ title }}"?
+      {% endblocktrans %}
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit">{% trans "Confirm Delete" %}</button>
+    </form>
+    <a href="{% url 'activity_center_admin:event_list' %}">{% trans "Cancel" %}</a>
+  </main>
+</body>
+</html>

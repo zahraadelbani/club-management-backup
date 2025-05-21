@@ -1,0 +1,23 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+{% block content %}
+<h2>{% trans "Update Poll:" %} {{ poll.question }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ poll_form.as_p }}
+
+    <h3>{% trans "Edit Existing Choices" %}</h3>
+    {% for form in choice_forms %}
+        {{ form.as_p }}
+    {% endfor %}
+
+    <h3>{% trans "Add a New Choice (Optional)" %}</h3>
+    <p>{% trans "Leave blank if you don't want to add a new choice." %}</p>
+    {{ new_choice_form.as_p }}
+
+    <button type="submit">{% trans "Save Changes" %}</button>
+</form>
+
+<a href="{% url 'polls:poll_list' %}">{% trans "Back to Polls" %}</a>
+{% endblock %}

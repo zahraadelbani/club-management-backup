@@ -1,0 +1,35 @@
+{% extends "navbar.html" %}
+{% block content %}
+<div class="p-4 max-w-xl mx-auto text-center">
+  <h2 class="text-2xl font-bold mb-4">Scan Event QR Code to Check-in</h2>
+
+  <div id="qr-reader" style="width: 300px;" class="mx-auto"></div>
+  <p id="result" class="mt-4 text-lg font-medium text-green-600"></p>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+function onScanSuccess(decodedText, decodedResult) {
+    const event_id = decodedText.trim();  // QR contains only event ID
+
+    fetch("{% url 'clubs:check_in_api' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ event_id: event_id })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("result").innerText = data.message;
+    })
+    .catch(err => {
+        document.getElementById("result").innerText = "Error: " + err;
+    });
+}
+
+let scanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
+scanner.render(onScanSuccess);
+</script>
+{% endblock %}

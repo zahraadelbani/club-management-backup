@@ -1,0 +1,305 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+
+
+<!-- Main Content -->
+<div class="min-h-screen mt-5 dark:bg-gray-900 py-6 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header with inline waiting approval -->
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex-1 text-center">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
+          <span class="text-blue-600 dark:text-blue-400">Explore & Join Clubs</span>
+        </h1>
+        <p class="mt-3 max-w-lg mx-auto text-gray-500 dark:text-gray-400">
+          Find student organizations that match your interests
+        </p>
+      </div>
+      
+      <!-- Waiting Approval Banner - Updated to be more compact and inline -->
+      <div id="waiting-approval-msg" class="flex items-center p-2 text-yellow-800 dark:text-yellow-200 bg-yellow-50 dark:bg-yellow-900 rounded-lg border border-yellow-300 dark:border-yellow-700 shadow-sm ml-4">
+        <svg class="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+        </svg>
+        <span class="text-xs font-medium">Waiting for approval...</span>
+      </div>
+    </div>
+
+    <!-- Clubs Grid -->
+    {% if clubs %}
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {% for club in clubs %}
+      <div class="group relative bg-white dark:bg-gray-800 overflow-hidden shadow-md rounded-lg hover:shadow-lg dark:hover:shadow-gray-700 transition-shadow duration-300 border border-gray-100 dark:border-gray-700">
+        <!-- Quota Badge - Remains visible on hover -->
+        <span class="absolute top-3 right-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 group-hover:opacity-100 transition-opacity">
+          {{ club.get_member_count }}/{{ club.quota }} spots
+        </span>
+
+        <!-- Fixed image container -->
+        <div class="h-48 w-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden relative">
+          <img 
+            src="{% if club.background_image %}{{ club.background_image.url }}{% else %}{% static 'emu.png' %}{% endif %}" 
+            alt="{{ club.name }} background" 
+            class="w-full h-full object-cover"
+          >
+        </div>
+
+        <!-- Club Content -->
+        <div class="p-5">
+          <div class="flex items-center mb-3">
+            <!-- Club Logo -->
+            <div class="flex-shrink-0 mr-3">
+              <img 
+                class="h-10 w-10 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm" 
+                src="{% if club.logo %}{{ club.logo.url }}{% else %}{% static 'emu.png' %}{% endif %}" 
+                alt="{{ club.name }} logo"
+              >
+            </div>
+            
+            <!-- Club Name -->
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              {{ club.name }}
+            </h3>
+          </div>
+
+          <!-- Description -->
+          <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+            {{ club.description|truncatewords:20 }}
+          </p>
+
+          <!-- Status Badge -->
+          {% if club.id in applied_clubs %}
+          <div class="mb-3">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+              <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-yellow-400 dark:text-yellow-300" fill="currentColor" viewBox="0 0 8 8">
+                <circle cx="4" cy="4" r="3" />
+              </svg>
+              Pending Application
+            </span>
+          </div>
+          {% endif %}
+
+          <!-- Action Buttons -->
+          <div class="flex justify-between items-center">
+            <a 
+              href="{% url 'clubs:club_detail' club.id %}" 
+              class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors flex items-center"
+            >
+              View details
+              <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
+
+            {% if club.id not in applied_clubs %}
+            <form method="POST" action="{% url 'users:apply_to_club' club.id %}">
+              {% csrf_token %}
+              <button 
+                type="submit" 
+                class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors"
+              >
+                Apply Now
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-10">
+      <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-white">No clubs available</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">There are no clubs to apply for at this time.</p>
+    </div>
+    {% endif %}
+
+    {% if page_obj.has_other_pages %}
+  <div class="flex items-center justify-center mt-10 mb-8">
+    <nav class="flex gap-1 text-sm">
+      {% if page_obj.has_previous %}
+        <a href="?page=1" class="px-3 py-1 rounded-lg border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">« First</a>
+        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 rounded-lg border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">‹ Prev</a>
+      {% endif %}
+
+      <span class="px-3 py-1 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      </span>
+
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 rounded-lg border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Next ›</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-1 rounded-lg border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Last »</a>
+      {% endif %}
+    </nav>
+  </div>
+{% endif %}
+
+
+    <!-- Pending Applications - Friendlier Design -->
+    {% if pending_memberships %}
+    <div class="mt-12">
+      <div class="mb-6">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+          <svg class="mr-2 h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+          </svg>
+          Your Applications
+        </h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">These clubs are reviewing your application</p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+          {% for membership in pending_memberships %}
+          <li class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <div class="px-4 py-4 sm:px-6 flex items-center justify-between">
+              <div class="flex items-center min-w-0">
+                <div class="flex-shrink-0 mr-3">
+                  <img class="h-10 w-10 rounded-full object-cover" 
+                       src="{% if membership.club.logo %}{{ membership.club.logo.url }}{% else %}{% static 'emu.png' %}{% endif %}" 
+                       alt="{{ membership.club.name }} logo">
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ membership.club.name }}</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 truncate">Applied on {{ membership.applied_date|date:"M d, Y" }}</p>
+                </div>
+              </div>
+              <form method="POST" action="{% url 'users:cancel_application' membership.club.id %}">
+                {% csrf_token %}
+                <button 
+                  type="submit" 
+                  class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800 transition-colors"
+                >
+                  Cancel
+                </button>
+              </form>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Acceptance Modal -->
+<div id="acceptance-modal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 transition-opacity" aria-hidden="true"></div>
+    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+    <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="sm:flex sm:items-start">
+          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900 sm:mx-0 sm:h-10 sm:w-10">
+            <svg class="h-6 w-6 text-green-600 dark:text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+              🎉 You're In!
+            </h3>
+            <div class="mt-2">
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                You've been accepted into a club. Your dashboard has been updated.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <button 
+          id="close-modal-btn" 
+          type="button" 
+          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+        >
+          Go to Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // (Keep the existing JavaScript exactly the same)
+  const waitingMsg = document.getElementById("waiting-approval-msg");
+  let modalShown = false;
+
+  setInterval(() => {
+    if (modalShown) return;
+
+    fetch("{% url 'users:check_membership_status' %}")
+      .then(res => res.json())
+      .then(data => {
+        if (data.accepted && !modalShown) {
+          modalShown = true;
+          if (waitingMsg) {
+            waitingMsg.classList.add("hidden");
+          }
+          const modal = document.getElementById("acceptance-modal");
+          if (modal) {
+            modal.classList.remove("hidden");
+          }
+        }
+      })
+      .catch(error => console.error("Membership check failed:", error));
+  }, 10000);
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const closeBtn = document.getElementById("close-modal-btn");
+    const modal = document.getElementById("acceptance-modal");
+    if (closeBtn && modal) {
+      closeBtn.addEventListener("click", () => {
+        modal.classList.add("hidden");
+        window.location.href = "{% url 'club_member:dashboard' %}";
+      });
+    }
+
+    {% if messages %}
+      {% for message in messages %}
+        showAlert("{{ message|escapejs }}", "{{ message.tags|escapejs }}");
+      {% endfor %}
+    {% endif %}
+  });
+</script>
+
+<style>
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.3s ease-out forwards;
+  }
+  
+  .animate-fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% block content %}
+<a href="{% url 'activity_center_admin:manage_elections' %}" 
+   class="inline-flex items-center mt-6 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+  ⬅️ Back to Manage Elections
+</a>
+
+
+<div class="results-container max-w-4xl mx-auto p-6">
+  <h1 class="text-2xl font-bold text-gray-800 mb-4">📊 Election Results for {{ election.name }}</h1>
+
+  {% if election.results_verified %}
+    <p class="text-green-600 font-semibold mb-4">✅ Results Verified</p>
+  {% else %}
+    <p class="text-red-600 font-semibold mb-4">❌ Results Not Verified</p>
+  {% endif %}
+
+  <div class="leaderboard space-y-4">
+    {% for candidate in candidates %}
+      <div class="bg-white p-4 rounded shadow flex items-center">
+        <img src="{{ candidate.user.profile_picture.url }}" alt="{{ candidate.user.name }}" class="w-12 h-12 rounded-full mr-4">
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold">{{ candidate.user.name }}</h3>
+          <p class="text-gray-600 text-sm">Votes: {{ candidate.votes }}</p>
+        </div>
+      </div>
+    {% empty %}
+      <p>No candidates available for this election.</p>
+    {% endfor %}
+  </div>
+
+  <canvas id="voteChart" class="mt-6"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const ctx = document.getElementById("voteChart").getContext("2d");
+    const labels = [{% for candidate in candidates %}"{{ candidate.user.name|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+    const data = [{% for candidate in candidates %}{{ candidate.votes }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Votes",
+          data: data,
+          backgroundColor: ["#3498db", "#2ecc71", "#e74c3c", "#f1c40f", "#9b59b6"],
+          borderWidth: 1,
+          borderRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true },
+          x: { ticks: { color: "#333" } }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

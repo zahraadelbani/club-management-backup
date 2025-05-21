@@ -1,0 +1,23 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+{% block content %}
+<h2>{% trans "Polls" %}</h2>
+
+{% if user.memberships.filter(membership_type='leader').exists %}
+  <a href="{% url 'polls:select_num_choices' %}">+ {% trans "Create Poll" %}</a>
+{% endif %}
+
+<ul>
+  {% for poll in polls %}
+    <li>
+      <a href="{% url 'polls:view_poll' poll.id %}">{{ poll.question }}</a>
+      ({{ poll.club.name }})
+      {% if user == poll.created_by %}
+        | <a href="{% url 'polls:update_poll' poll.id %}">{% trans "Edit" %}</a>
+      {% endif %}
+    </li>
+  {% empty %}
+    <li>{% trans "No polls available." %}</li>
+  {% endfor %}
+</ul>
+{% endblock %}

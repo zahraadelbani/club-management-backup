@@ -1,0 +1,154 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% block content %}
+
+<div class="min-h-screen dark:bg-gray-900 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Breadcrumbs -->
+    <nav class="mb-8">
+      <ol class="flex items-center space-x-2 text-sm">
+        <li>
+          <a href="" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">Home</a>
+        </li>
+        <li class="flex items-center space-x-2">
+          <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+          <a href="{% url 'voting:elections' %}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">Elections</a>
+        </li>
+        <li class="flex items-center space-x-2">
+          <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+          <span class="text-gray-700 dark:text-gray-300">Cast Vote</span>
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">Cast Your Vote</h1>
+      <p class="text-xl text-gray-600 dark:text-gray-400">{{ election.name }}</p>
+    </div>
+
+    <!-- Instructions -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Voting Instructions</h3>
+      <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-2">
+        <li>Review each candidate's information carefully</li>
+        <li>Click on a candidate's card to select them for their respective club</li>
+        <li>You can select up to 3 club presidents</li>
+        <li>Selected candidates will be highlighted</li>
+        <li>Review your choices before submitting</li>
+        <li>Click the "Submit All Votes" button at the bottom when ready</li>
+      </ul>
+    </div>
+
+    <!-- Voting Form -->
+    <form method="POST" class="space-y-8">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+            <legend class="text-2xl font-bold text-gray-900 dark:text-white">{{ field.label }}</legend>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {% for subwidget in field %}
+              <div class="relative">
+                <label class="block cursor-pointer">
+                  <input type="radio" 
+                         name="{{ subwidget.data.name }}" 
+                         value="{{ subwidget.data.value }}"
+                         class="hidden"
+                         {% if subwidget.data.attrs.checked %}checked{% endif %}>
+                  <div class="card-container bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-500"
+                       onclick="selectCard(this)">
+                    
+                    {% with data=subwidget.choice_label %}
+                    <!-- Candidate Image -->
+                    <div class="aspect-w-16 aspect-h-9 bg-gray-200 dark:bg-gray-700">
+                      <img src="{{ data.image_url }}" 
+                           alt="Candidate Photo"
+                           class="object-cover w-full h-48"
+                           onerror="this.src='{% static 'images/default-candidate.jpg' %}'">
+                    </div>
+
+                    <!-- Candidate Info -->
+                    <div class="p-4">
+                      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">{{ data.name }}</h3>
+
+                      <div class="text-gray-600 dark:text-gray-400 text-sm line-clamp-3">
+                        {{ data.description }}
+                      </div>
+
+                      <!-- Selection Indicator -->
+                      <div class="mt-4 flex items-center justify-center">
+                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                          <svg class="w-4 h-4 text-white opacity-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                    {% endwith %}
+                  </div>
+                </label>
+              </div>
+            {% endfor %}
+          </div>
+
+          {% if field.errors %}
+            <div class="mt-4 text-sm text-red-600 dark:text-red-400 font-medium">
+              {{ field.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <!-- Submit -->
+      <div class="flex justify-center mt-8">
+        <button type="submit" 
+                class="inline-flex items-center justify-center px-6 py-3 text-lg font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+          Submit All Votes
+          <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function selectCard(card) {
+    const radio = card.closest('label').querySelector('input[type="radio"]');
+    const allCards = document.querySelectorAll(`input[name="${radio.name}"]`);
+    allCards.forEach(input => {
+        const container = input.closest('label').querySelector('.card-container');
+        container.classList.remove('selected');
+    });
+    radio.checked = true;
+    card.classList.add('selected');
+}
+</script>
+
+<style>
+.card-container {
+    transition: all 0.2s ease-in-out;
+}
+.card-container.selected {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px #3b82f6;
+}
+.card-container.selected .rounded-full {
+    border-color: #3b82f6 !important;
+    background-color: #3b82f6;
+}
+.card-container.selected .opacity-0 {
+    opacity: 1 !important;
+}
+</style>
+
+{% endblock %}

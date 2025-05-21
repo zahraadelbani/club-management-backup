@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>{% trans "Candidates for" %} {{ position.name }}</h1>
+
+{% for candidate in candidates %}
+    <h3>{{ candidate.user.username }}</h3>
+    <p>{{ candidate.manifesto }}</p>
+    <form action="{% url 'voting:vote' election.id position.id candidate.id %}" method="post">
+        {% csrf_token %}
+        <button type="submit">{% trans "Vote" %}</button>
+    </form>
+{% empty %}
+    <p>{% trans "No candidates available." %}</p>
+{% endfor %}
+
+<div id="results">
+    {% for candidate in candidates %}
+        <p>{{ candidate.user.username }} ({{ candidate.position }}): {{ candidate.votes }} {% trans "votes" %}</p>
+    {% endfor %}
+</div>
+
+<script>
+    var electionId = "{{ election.id }}";
+    var socket = new WebSocket("ws://" + window.location.host + "/ws/election/" + electionId + "/");
+
+    socket.onmessage = function(event) {
+        var data = JSON.parse(event.data);
+        updateResults(data.candidates);
+    };
+
+    function updateResults(candidates) {
+        var resultsContainer = document.getElementById("results");
+        resultsContainer.innerHTML = "";
+        candidates.forEach(candidate => {
+            resultsContainer.innerHTML += `<p>${candidate.name} (${candidate.position}): ${candidate.votes} {% trans "votes" %}</p>`;
+        });
+    }
+</script>
+{% endblock %}

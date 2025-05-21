@@ -1,0 +1,98 @@
+<!-- {% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Submit Activity Request" %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>{% trans "Submit Activity Request" %}</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <label for="{{ form.title.id_for_label }}">{% trans "Title" %}:</label>
+            {{ form.title }}
+
+            <label for="{{ form.datetime.id_for_label }}">{% trans "Date & Time" %}:</label>
+            {{ form.datetime }}
+
+            <label for="{{ form.participants.id_for_label }}">{% trans "Participants" %}:</label>
+            {{ form.participants }}
+
+            <label for="{{ form.image.id_for_label }}">{% trans "Upload Image" %}:</label>
+            {{ form.image }}
+
+            <label for="{{ form.needs.id_for_label }}">{% trans "Needs" %}:</label>
+            {{ form.needs }}
+
+            <label for="{{ form.total_cost.id_for_label }}">{% trans "Total Cost" %}:</label>
+            {{ form.total_cost }}
+
+            <label for="{{ form.transportation_request.id_for_label }}">{% trans "Transportation Request" %}:</label>
+            {{ form.transportation_request }}
+
+            <label for="{{ form.supporting_documents.id_for_label }}">{% trans "Supporting Documents" %}:</label>
+            {{ form.supporting_documents }}
+
+            <button type="submit">{% trans "Submit Request" %}</button>
+        </form>
+    </div>
+
+</body>
+</html>
+ -->

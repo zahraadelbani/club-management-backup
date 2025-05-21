@@ -1,0 +1,38 @@
+{% load i18n %}
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Screen & Browser Dimensions" %}</title>
+</head>
+<body>
+    <h2>{% trans "Browser (Viewport) Dimensions" %}</h2>
+    <p id="viewport"
+       data-width-label="{% trans 'Width' %}"
+       data-height-label="{% trans 'Height' %}"></p>
+
+    <h2>{% trans "Screen Dimensions" %}</h2>
+    <p id="screen"
+       data-screen-width-label="{% trans 'Screen Width' %}"
+       data-screen-height-label="{% trans 'Screen Height' %}"></p>
+
+    <script>
+        function showDimensions() {
+            const viewport = document.getElementById("viewport");
+            const screenInfo = document.getElementById("screen");
+
+            const widthLabel = viewport.dataset.widthLabel;
+            const heightLabel = viewport.dataset.heightLabel;
+            const screenWidthLabel = screenInfo.dataset.screenWidthLabel;
+            const screenHeightLabel = screenInfo.dataset.screenHeightLabel;
+
+            viewport.innerText = `${widthLabel}: ${window.innerWidth}, ${heightLabel}: ${window.innerHeight}`;
+            screenInfo.innerText = `${screenWidthLabel}: ${screen.width}, ${screenHeightLabel}: ${screen.height}`;
+        }
+
+        window.onload = showDimensions;
+        window.onresize = showDimensions;
+    </script>
+</body>
+</html>

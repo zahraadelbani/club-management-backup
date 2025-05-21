@@ -1,0 +1,24 @@
+{% extends "navbar.html" %}
+{% load i18n %}
+{% block content %}
+<div class="max-w-lg mx-auto mt-10">
+  <h2>{% trans "Select Number of Choices" %}</h2>
+  <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">{% trans "Next" %}</button>
+  </form>
+</div>
+
+<h2>{% trans "Active Polls" %}</h2>
+<ul>
+  {% for poll in club.polls.all %}
+    <li>
+      <a href="{% url 'polls:view_poll' poll.id %}">{{ poll.question }}</a>
+      ({% trans "Created by" %} {{ poll.created_by.name }})
+    </li>
+  {% empty %}
+    <li>{% trans "No active polls." %}</li>
+  {% endfor %}
+</ul>
+{% endblock %}

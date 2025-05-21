@@ -1,0 +1,11 @@
+{% load i18n %}
+{% block content %}
+<h2>{% trans "Club Analytics" %}</h2>
+
+<p><strong>{% trans "Total Members" %}:</strong> {{ analytics.total_members }}</p>
+<p><strong>{% trans "Total Events" %}:</strong> {{ analytics.total_events }}</p>
+<p><strong>{% trans "Total Polls" %}:</strong> {{ analytics.total_polls }}</p>
+
+<a href="{% url 'club_leader:dashboard' %}">{% trans "Back to Dashboard" %}</a>
+
+{% endblock %}
