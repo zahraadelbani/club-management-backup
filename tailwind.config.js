@@ -2,13 +2,11 @@ const flowbite = require('flowbite/plugin');
 
 module.exports = {
   content: [
-    '../templates/**/*.html',
-    '../../templates/**/*.html',
-    '../../**/templates/**/*.html',
-    // '../../**/*.js',
-    // '../../**/*.py'
+    "./theme/templates/**/*.html",
+    "./templates/**/*.html",
+    "./**/templates/**/*.html"
   ],
-  darkMode: 'class', // ← move this here
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -68,5 +66,4 @@ module.exports = {
     require('@tailwindcss/aspect-ratio'),
     flowbite,
   ],
-
-}
+};
