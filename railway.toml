@@ -2,4 +2,4 @@
 builder = "heroku/buildpacks:20"
 
 [deploy]
-startCommand = "python manage.py migrate && python manage.py collectstatic --noinput && daphne -b 0.0.0.0 -p $PORT club_management.asgi:application"
+startCommand = "npm install && npm run build && python manage.py migrate && python manage.py collectstatic --noinput && daphne -b 0.0.0.0 -p $PORT club_management.asgi:application"
