@@ -134,8 +134,6 @@ environ.Env.read_env()
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
-HUGGINGFACE_API_KEY = config("HUGGINGFACE_API_KEY")
-
 
 # Set your custom user model
 AUTH_USER_MODEL = "users.User"
