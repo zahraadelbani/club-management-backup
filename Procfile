@@ -1,1 +1,1 @@
-﻿web: daphne -b 0.0.0.0 -p $PORT club_management.asgi:application
+﻿web: python manage.py migrate && python manage.py collectstatic --noinput && daphne club_management.asgi:application
